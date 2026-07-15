@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { sounds } from '../lib/sounds'
 
 const lines = [
@@ -16,6 +16,15 @@ export default function OpeningCutscene({ onFinish }: { onFinish: () => void }) 
     if (step === lines.length - 1) onFinish()
     else setStep((current) => current + 1)
   }
+
+  useEffect(() => {
+    const continueWithEnter = (event: KeyboardEvent) => {
+      if (event.code !== 'Enter') return
+      event.preventDefault(); next()
+    }
+    window.addEventListener('keydown', continueWithEnter)
+    return () => window.removeEventListener('keydown', continueWithEnter)
+  }, [step])
 
   return <div className="opening-cutscene" onClick={next} role="dialog" aria-label="Вступление">
     <div className="cutscene-light" /><div className="cutscene-hero" aria-hidden="true">◆</div>

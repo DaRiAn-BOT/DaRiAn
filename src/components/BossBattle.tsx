@@ -47,6 +47,16 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
     else setCombatStarted(true)
   }
 
+  useEffect(() => {
+    if (combatStarted) return
+    const continueWithEnter = (event: KeyboardEvent) => {
+      if (event.code !== 'Enter') return
+      event.preventDefault(); continueDialogue()
+    }
+    window.addEventListener('keydown', continueWithEnter)
+    return () => window.removeEventListener('keydown', continueWithEnter)
+  }, [combatStarted, dialogueStep])
+
   const turn = (defending: boolean) => {
     if (busy) return
     setBusy(true)
@@ -55,7 +65,7 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
     if (defending) sounds.shield(); else {
       sounds.attack(); usedAttack.current = true
       setAttackAnimation(true); setBossHitAnimation(true)
-      window.setTimeout(() => { setAttackAnimation(false); setBossHitAnimation(false) }, 420)
+      window.setTimeout(() => { setAttackAnimation(false); setBossHitAnimation(false) }, 800)
     }
     const weaponBonus = weaponLevel >= 1 ? .5 : 0
     const fireBonus = weaponLevel >= 2 ? 1 : 0
@@ -89,13 +99,13 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
 
   useEffect(() => {
     if (!combatStarted) return
-    const attackWithSpace = (event: KeyboardEvent) => {
-      if (event.code !== 'Space') return
+    const battleHotkeys = (event: KeyboardEvent) => {
+      if (event.code !== 'Space' && event.code !== 'KeyR') return
       event.preventDefault()
-      if (!busy) turn(false)
+      if (!busy) turn(event.code === 'KeyR')
     }
-    window.addEventListener('keydown', attackWithSpace)
-    return () => window.removeEventListener('keydown', attackWithSpace)
+    window.addEventListener('keydown', battleHotkeys)
+    return () => window.removeEventListener('keydown', battleHotkeys)
   }, [busy, combatStarted])
 
   if (!combatStarted) return <div className={`battle-card boss-dialogue ${finalBoss ? 'final-arena' : ''}`}>
@@ -122,7 +132,7 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
     <p className="battle-message">{message} · Твой урон: {formatNumber(attackDamage)}</p>
     <div className="battle-actions">
       <button disabled={busy} onClick={() => turn(false)}>⚔ Атаковать · ПРОБЕЛ</button>
-      <button disabled={busy} className="secondary" onClick={() => turn(true)}>◈ Щит</button>
+      <button disabled={busy} className="secondary" onClick={() => turn(true)}>◈ Щит · R / К</button>
     </div>
   </div>
 }

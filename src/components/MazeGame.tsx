@@ -69,6 +69,8 @@ export default function MazeGame() {
   const [selectedSkin, setSelectedSkin] = useState(saved?.selectedSkin ?? 0);
   const [facing] = useState<"up" | "down" | "left" | "right">("down");
   const [walkStep, setWalkStep] = useState(false);
+  const [mazeAttacking, setMazeAttacking] = useState(false);
+  const [hitMonsterId, setHitMonsterId] = useState<number | null>(null);
   const [inventory, setInventory] = useState<InventoryItem[]>(
     saved?.inventory ?? [
       { kind: "weapon", level: 0 },
@@ -297,8 +299,12 @@ export default function MazeGame() {
   const attackMonster = useCallback(() => {
     if (screen !== "maze") return;
     sounds.attack();
+    setMazeAttacking(true);
+    window.setTimeout(() => setMazeAttacking(false), 420);
     const target = monsters.find((enemy) => Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1);
     if (!target) return;
+    setHitMonsterId(target.id);
+    window.setTimeout(() => setHitMonsterId(null), 420);
     addStat("attacks");
     const damage = attackDamage + weaponLevel * 0.5;
     setMonsters((enemies) => enemies.flatMap((enemy) => enemy.id !== target.id ? [enemy] : enemy.hp <= damage ? [] : [{ ...enemy, hp: Math.round((enemy.hp - damage) * 10) / 10 }]));
@@ -443,6 +449,8 @@ export default function MazeGame() {
             skin={selectedSkin}
             facing={facing}
             walkStep={walkStep}
+            attackAnimation={mazeAttacking}
+            hitMonsterId={hitMonsterId}
             onMove={move}
           />
           <button className={`maze-attack-button ${monsterInRange ? "enemy-near" : ""}`} onClick={attackMonster}>

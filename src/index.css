@@ -1,4 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+/* Единый пиксельный стиль игры */
+body .game-shell, body button, body kbd { font-smooth: never; -webkit-font-smoothing: none; }
+body .story-card, body .battle-card, body .maze-camera, body .confirm-dialog, body .cutscene-dialogue { border-radius: 3px; border-width: 3px; box-shadow: inset 4px 4px 0 #ffffff0d, inset -4px -4px 0 #0005, 8px 8px 0 #020403aa; }
+body button { border-radius: 2px; border-width: 2px; box-shadow: inset 3px 3px 0 #ffffff18, inset -3px -3px 0 #0005, 4px 4px 0 #020302aa; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+body button:hover { transform: translate(-1px, -1px); box-shadow: inset 3px 3px 0 #ffffff20, inset -3px -3px 0 #0006, 6px 6px 0 #020302aa; }
+body button:active { transform: translate(3px, 3px); box-shadow: inset 3px 3px 0 #0005; }
+body .progress, body .bar-track, body .maze-health i { border-radius: 0; border: 2px solid #111713; height: 10px; box-shadow: 2px 2px 0 #0008; }
+body .progress i, body .bar-track i, body .maze-health em { image-rendering: pixelated; transition: width .25s steps(8, end); }
+body .checkpoint, body .boss-ability, body .equipment-line, body .battle-message, body .attack-status { border-radius: 2px; text-shadow: 2px 2px 0 #000; }
+body .skin-option, body .language-picker, body .controls-list div, body .achievement-card { border-radius: 2px; }
+body .mini-monster, body .hero, body .clue, body .loot, body .checkpoint-marker { image-rendering: pixelated; border-radius: 0; }
+body .maze-camera::after { border-radius: 0; }
+body .opening-cutscene, body .confirm-overlay { image-rendering: pixelated; }
+body .cutscene-light { clip-path: polygon(44% 0, 56% 0, 76% 100%, 24% 100%); opacity: .7; }
+body h1, body h2, body h3, body .eyebrow { letter-spacing: .06em; text-shadow: 3px 3px 0 #000; }
 body .app { background: linear-gradient(105deg, transparent 0 9%, #ffffff38 10%, #dce3df2e 14%, transparent 25%), linear-gradient(72deg, transparent 0 69%, #ffffff32 70%, #d8d8d82c 76%, transparent 88%), radial-gradient(ellipse at 18% 8%, #ffffff55 0 3%, #e8eeea35 10%, transparent 29%), radial-gradient(ellipse at 83% 68%, #ffffff4d 0 2%, #e5e5e532 11%, transparent 27%), repeating-linear-gradient(135deg, #070b09 0 2px, #020403 2px 10px); }
 body .app::before { opacity: .24; background-image: radial-gradient(ellipse, #e7d69c 0 1px, transparent 3px), radial-gradient(ellipse, #a9d2ba 0 1px, transparent 3px); }
 body .app::after { background: linear-gradient(105deg, #0008 0 8%, transparent 10% 23%, #0007 27% 68%, transparent 70% 84%, #0009 89%), radial-gradient(ellipse at center, transparent 24%, #010201b8 100%), linear-gradient(180deg, #0001, #0103029c); }
@@ -92,12 +107,23 @@ h1, h2 { margin: 0; } h1 { font-size: clamp(27px, 6vw, 40px); letter-spacing: -.
 .camera-2 .maze-hero-overlay, .camera-3 .maze-hero-overlay { width: 40px; height: 80px; }.battle-hero { flex: 0 0 40px; width: 40px; height: 80px; }.simple-hero { width: 40px; height: 80px; image-rendering: pixelated; transform: none; }.simple-hero .head, .simple-hero .body, .simple-hero .arm, .simple-hero .hand, .simple-hero .legs::before, .simple-hero .legs::after, .simple-hero .boot { border-radius: 0; background-image: none; }.simple-hero .head { box-shadow: inset 3px 0 #f2cfad, inset -3px 0 #ad765f, 3px 3px 0 #1b1412; }.simple-hero .body, .simple-hero .arm { box-shadow: inset 3px 0 #ffffff20, inset -3px 0 var(--shirt-dark), 3px 3px 0 #000a; }.simple-hero .legs::before, .simple-hero .legs::after, .simple-hero .boot { box-shadow: inset 3px 0 #ffffff18, 3px 3px 0 #000b; }
 .camera-2 .maze-hero-overlay, .camera-3 .maze-hero-overlay { width: 24px; height: 48px; }.battle-hero { flex: 0 0 24px; width: 24px; height: 48px; }.simple-hero { width: 24px; height: 48px; filter: drop-shadow(2px 2px 0 #000) !important; }.simple-hero .head, .simple-hero .body, .simple-hero .arm, .simple-hero .legs::before, .simple-hero .legs::after, .simple-hero .boot { border-width: 1px; }.simple-hero .head { box-shadow: inset 2px 0 #f2cfad, inset -2px 0 #ad765f, 2px 2px 0 #1b1412; }.simple-hero .head::before { box-shadow: 2px 1px 0 #15100e; }.simple-hero .head::after { width: 2px; height: 2px; box-shadow: 5px 0 #171313; }.simple-hero .body, .simple-hero .arm { box-shadow: inset 2px 0 #ffffff20, inset -2px 0 var(--shirt-dark), 2px 2px 0 #000a; }.simple-hero .hand { border: 0; box-shadow: 1px 1px 0 #0008; }.simple-hero .legs::before, .simple-hero .legs::after, .simple-hero .boot { box-shadow: inset 2px 0 #ffffff18, 2px 2px 0 #000b; }
 .battle-hero { flex: 0 0 52px; width: 52px; height: 104px; }
-.battle-hero.attacking { animation: hero-attack .42s steps(4, end); }
-.battle-hero.attacking .arm-right { animation: attack-arm .42s steps(4, end); }
-.boss-portrait.boss-hit img { animation: boss-hit .42s steps(3, end); }
-@keyframes hero-attack { 0%, 100% { transform: rotateY(24deg) translateX(0); } 35% { transform: rotateY(15deg) translateX(10px) translateY(-2px); } 65% { transform: rotateY(8deg) translateX(24px); } }
-@keyframes attack-arm { 0%, 100% { transform: rotate(-10deg) translateZ(8px); } 35% { transform: rotate(-115deg) translateZ(8px); } 65% { transform: rotate(82deg) translateX(10px) translateZ(12px); } }
-@keyframes boss-hit { 0%, 100% { transform: translateX(0); filter: drop-shadow(0 8px 8px #000c); } 35% { transform: translateX(10px); filter: brightness(2) drop-shadow(0 0 15px #fff); } 65% { transform: translateX(-4px); filter: brightness(.7) drop-shadow(0 8px 8px #000c); } }
+.hero .weapon { display: none; position: absolute; z-index: 8; left: 42%; bottom: -8%; width: 7px; height: 58px; border: 1px solid #151b19; border-radius: 55% 55% 2px 2px; background: linear-gradient(90deg, #65706d, #f2f0dd 42%, #9ba5a1 72%, #343b38); box-shadow: 0 0 0 1px #0008, 2px 3px 4px #000a; transform: rotate(18deg); transform-origin: 50% 100%; }
+.hero .weapon::before { content: ''; position: absolute; left: -6px; bottom: -3px; width: 17px; height: 5px; border: 1px solid #21180d; background: #c69b45; box-shadow: 0 2px #4e3718; }.hero .weapon::after { content: ''; position: absolute; left: 1px; bottom: -14px; width: 3px; height: 13px; background: #5b3822; box-shadow: 0 0 0 1px #2c1a10; }
+.battle-hero .weapon { display: block; }
+.maze-attacking .weapon { display: block; height: 34px; width: 5px; }
+.maze-hero-overlay .maze-attacking { animation: maze-hero-attack .4s steps(4, end); }
+.maze-hero-overlay .maze-attacking .arm-right { animation: maze-attack-arm .4s steps(4, end); }
+.mini-monster.monster-hit { animation: maze-monster-hit .4s steps(4, end); }
+@keyframes maze-hero-attack { 0%, 100% { translate: 0 0; } 45%, 65% { translate: 7px -1px; } }
+@keyframes maze-attack-arm { 0%, 100% { transform: rotate(-10deg) translateZ(8px); } 35% { transform: rotate(-105deg) translateZ(10px); } 65% { transform: rotate(75deg) translateX(5px) translateZ(12px); } }
+@keyframes maze-monster-hit { 0%, 100% { translate: 0 0; filter: none; } 35% { translate: 5px 0; filter: brightness(2.5); } 65% { translate: -3px 0; filter: brightness(.6); } }
+.battle-hero.attacking { z-index: 9; animation: hero-attack .78s steps(7, end); }
+.battle-hero.attacking .arm-right { animation: attack-arm .78s steps(7, end); }
+.battle-hero.attacking .weapon { filter: drop-shadow(0 0 5px #fff); }
+.boss-portrait.boss-hit img { animation: boss-hit .78s steps(7, end); }
+@keyframes hero-attack { 0%, 12%, 100% { transform: rotateY(24deg) translateX(0); } 28% { transform: rotateY(12deg) translateX(36px) translateY(-3px); } 48%, 62% { transform: rotateY(3deg) translateX(128px) translateY(-2px); } 78% { transform: rotateY(15deg) translateX(52px); } }
+@keyframes attack-arm { 0%, 15%, 100% { transform: rotate(-10deg) translateZ(8px); } 30% { transform: rotate(-125deg) translateZ(10px); } 48% { transform: rotate(72deg) translateX(10px) translateZ(15px); } 62% { transform: rotate(100deg) translateX(13px) translateZ(15px); } }
+@keyframes boss-hit { 0%, 45%, 100% { transform: translateX(0); filter: drop-shadow(0 8px 8px #000c); } 52% { transform: translateX(13px) rotate(2deg); filter: brightness(2.2) drop-shadow(0 0 18px #fff); } 68% { transform: translateX(-5px); filter: brightness(.65) drop-shadow(0 8px 8px #000c); } }
 .stats-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 16px 0 12px; }.story-card .stats-tabs button { padding: 9px 10px; color: #9eaaa3; background: #27342e; font-size: 11px; }.story-card .stats-tabs button.active { color: #17201c; background: #d5ad58; }
 .account-card > span { margin-bottom: 4px; }.auth-form h2 { margin-bottom: 18px; }.auth-form .form { display: grid; gap: 10px; }.auth-form input { width: 100%; padding: 12px 14px; border: 1px solid #52645a; border-radius: 9px; outline: none; color: #e8e6df; background: #111a16; }.auth-form input:focus { border-color: #d5ad58; box-shadow: 0 0 0 2px #d5ad5833; }.auth-form .message { margin: 12px auto; color: #e7c875; font-size: 12px; }.auth-form .ghost { margin-top: 12px; padding: 8px; color: #aeb9b3; background: transparent; font-size: 11px; }.account-card .account-back { margin-top: 14px; }.account-actions { display: flex; justify-content: center; gap: 10px; }
 .guest-divider { display: flex; align-items: center; gap: 10px; margin: 15px 0; color: #77847d; font-size: 10px; }.guest-divider::before, .guest-divider::after { content: ''; flex: 1; height: 1px; background: #3c4b43; }.story-card .guest-button { color: #e8e6df; background: #40554a; }.account-card .account-back { margin-left: 8px; }

@@ -3,14 +3,14 @@ import HeroModel from './HeroModel'
 import type { MiniMonster } from '../lib/miniMonsters'
 
 type Facing = 'up' | 'down' | 'left' | 'right'
-type Props = { maze: Maze; player: Point; playerName: string; playerHp: number; playerMaxHp: number; checkpoint: Point; monsters: MiniMonster[]; cameraMode: 2 | 3; lootFound: boolean; skin: number; facing: Facing; walkStep: boolean; onMove: (dx: number, dy: number) => void }
+type Props = { maze: Maze; player: Point; playerName: string; playerHp: number; playerMaxHp: number; checkpoint: Point; monsters: MiniMonster[]; cameraMode: 2 | 3; lootFound: boolean; skin: number; facing: Facing; walkStep: boolean; attackAnimation: boolean; hitMonsterId: number | null; onMove: (dx: number, dy: number) => void }
 const controls = [
   { label: '↑', dx: 0, dy: -1, className: 'up' }, { label: '←', dx: -1, dy: 0, className: 'left' },
   { label: '↓', dx: 0, dy: 1, className: 'down' }, { label: '→', dx: 1, dy: 0, className: 'right' },
 ]
 const CELL_SIZE = 36
 
-export default function MazeBoard({ maze, player, playerName, playerHp, playerMaxHp, checkpoint, monsters, cameraMode, lootFound, skin, facing, walkStep, onMove }: Props) {
+export default function MazeBoard({ maze, player, playerName, playerHp, playerMaxHp, checkpoint, monsters, cameraMode, lootFound, skin, facing, walkStep, attackAnimation, hitMonsterId, onMove }: Props) {
   const cameraScale = cameraMode === 2 ? 2.15 : 1.15
   const playerOffset = `translate(-${(player.x + .5) * CELL_SIZE}px, -${(player.y + .5) * CELL_SIZE}px)`
   const cameraTransform = cameraMode === 2
@@ -38,13 +38,13 @@ export default function MazeBoard({ maze, player, playerName, playerHp, playerMa
           return <div key={`${x}-${y}`} className={`${open ? 'cell path' : 'cell wall'} ${isPlayer ? 'player-cell' : ''}`}>
             {isClue && <span className="clue">?</span>}
             {isCheckpoint && <span className="checkpoint-marker" title="Чекпоинт">◆</span>}
-            {monster && <span className="mini-monster" title={`Мини-монстр: ${monster.hp} HP`}><i /><b>{monster.hp.toFixed(1).replace('.0', '')}</b></span>}
+            {monster && <span className={`mini-monster ${hitMonsterId === monster.id ? 'monster-hit' : ''}`} title={`Мини-монстр: ${monster.hp} HP`}><i /><b>{monster.hp.toFixed(1).replace('.0', '')}</b></span>}
             {isLoot && <span className="loot">{maze.loot?.kind === 'weapon' ? '⚔' : maze.loot?.kind === 'armor' ? '♟' : '◆'}</span>}
             <span className="fog" style={{ opacity: darkness }} />
           </div>
         }))}
       </div>
-      <span className="maze-hero-overlay"><HeroModel skin={skin} className={`facing-${facing} ${walkStep ? 'walk-a' : 'walk-b'}`} /></span>
+      <span className="maze-hero-overlay"><HeroModel skin={skin} className={`facing-${facing} ${walkStep ? 'walk-a' : 'walk-b'} ${attackAnimation ? 'maze-attacking' : ''}`} /></span>
     </div>
     <p className="camera-label">Камера: {cameraMode === 2 ? 'от второго лица' : 'от третьего лица'}</p>
     <div className="controls" aria-label="Управление">
