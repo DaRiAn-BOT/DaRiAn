@@ -20,6 +20,8 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
   const [winning, setWinning] = useState(false)
   const [dialogueStep, setDialogueStep] = useState(0)
   const [combatStarted, setCombatStarted] = useState(false)
+  const [attackAnimation, setAttackAnimation] = useState(false)
+  const [bossHitAnimation, setBossHitAnimation] = useState(false)
   const powerAttackReady = useRef(false)
   const usedAttack = useRef(false)
   const powerAttackChance = finalBoss ? .45 : .35
@@ -50,7 +52,11 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
     setBusy(true)
     const isPowerAttack = powerAttackReady.current
     onAction(defending ? 'shield' : 'attack')
-    if (defending) sounds.shield(); else { sounds.attack(); usedAttack.current = true }
+    if (defending) sounds.shield(); else {
+      sounds.attack(); usedAttack.current = true
+      setAttackAnimation(true); setBossHitAnimation(true)
+      window.setTimeout(() => { setAttackAnimation(false); setBossHitAnimation(false) }, 420)
+    }
     const weaponBonus = weaponLevel >= 1 ? .5 : 0
     const fireBonus = weaponLevel >= 2 ? 1 : 0
     const skinReduction = !defending && !finalBoss && (number - 1) % 4 === 0 ? .5 : 0
@@ -81,6 +87,17 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
     }, 350)
   }
 
+  useEffect(() => {
+    if (!combatStarted) return
+    const attackWithSpace = (event: KeyboardEvent) => {
+      if (event.code !== 'Space') return
+      event.preventDefault()
+      if (!busy) turn(false)
+    }
+    window.addEventListener('keydown', attackWithSpace)
+    return () => window.removeEventListener('keydown', attackWithSpace)
+  }, [busy, combatStarted])
+
   if (!combatStarted) return <div className={`battle-card boss-dialogue ${finalBoss ? 'final-arena' : ''}`}>
     <div className="arena-fighters"><HeroModel skin={skin} className="battle-hero" /><div className={`boss-portrait ${finalBoss ? 'final' : ''}`}><img src={finalBoss ? '/bosses/maze-king.png' : '/bosses/stone-guardian.png'} alt={bossNames[number - 1]} /></div></div>
     <p className="eyebrow">{dialogueStep + 1} / {bossDialogues[number - 1].length}</p>
@@ -91,8 +108,8 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
 
   return <div className={`battle-card ${finalBoss ? 'final-arena' : ''} ${winning ? 'victory' : ''}`}>
     <div className="arena-fighters">
-      <HeroModel skin={skin} className="battle-hero" />
-      <div className={`boss-portrait ${finalBoss ? 'final' : ''}`}>
+      <HeroModel skin={skin} className={`battle-hero ${attackAnimation ? 'attacking' : ''}`} />
+      <div className={`boss-portrait ${finalBoss ? 'final' : ''} ${bossHitAnimation ? 'boss-hit' : ''}`}>
         <img src={finalBoss ? '/bosses/maze-king.png' : '/bosses/stone-guardian.png'} alt={finalBoss ? 'Король Лабиринта' : `Каменный страж ${number}`} />
       </div>
     </div>
@@ -104,7 +121,7 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
     <p className="equipment-line">⚔ {weapons[weaponLevel].name} · ◆ {shields[shieldLevel].name} · ♟ {armors[armorLevel].name}</p>
     <p className="battle-message">{message} · Твой урон: {formatNumber(attackDamage)}</p>
     <div className="battle-actions">
-      <button disabled={busy} onClick={() => turn(false)}>⚔ Атаковать</button>
+      <button disabled={busy} onClick={() => turn(false)}>⚔ Атаковать · ПРОБЕЛ</button>
       <button disabled={busy} className="secondary" onClick={() => turn(true)}>◈ Щит</button>
     </div>
   </div>

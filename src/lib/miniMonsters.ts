@@ -1,6 +1,7 @@
 import type { Maze, Point } from './maze'
 
 export type MiniMonster = Point & { id: number; hp: number; maxHp: number }
+export const MINI_MONSTER_DAMAGE = 4
 const steps = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }]
 
 export function createMiniMonsters(maze: Maze, level: number): MiniMonster[] {

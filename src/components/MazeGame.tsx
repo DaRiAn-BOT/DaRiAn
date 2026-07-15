@@ -33,6 +33,7 @@ import { loadNickname, NICKNAME_EVENT } from "../lib/playerProfile";
 import {
   chasePlayer,
   createMiniMonsters,
+  MINI_MONSTER_DAMAGE,
   type MiniMonster,
 } from "../lib/miniMonsters";
 
@@ -104,6 +105,7 @@ export default function MazeGame() {
     stats,
   );
   const bossNumber = clues + 1;
+  const monsterInRange = monsters.some((enemy) => Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1);
   const addStat = useCallback((key: keyof GameStats) => {
     setStats((current) => ({ ...current, [key]: current[key] + 1 }));
     setLifetimeStats((current) => ({ ...current, [key]: current[key] + 1 }));
@@ -195,7 +197,7 @@ export default function MazeGame() {
       ).length;
       if (!attackers) return;
       sounds.hit();
-      const healthAfterHit = Math.max(0, mazeHp - attackers * 2);
+      const healthAfterHit = Math.max(0, mazeHp - attackers * MINI_MONSTER_DAMAGE);
       if (healthAfterHit > 0) {
         setMazeHp(healthAfterHit);
         return;
@@ -203,7 +205,7 @@ export default function MazeGame() {
       setMazeHp(mazeMaxHp);
       setPlayer(checkpoint);
       setMonsters(createMiniMonsters(maze, clues + 1));
-    }, 700);
+    }, 500);
     return () => window.clearInterval(timer);
   }, [checkpoint, clues, maze, mazeHp, mazeMaxHp, monsters, player, screen]);
 
@@ -235,23 +237,6 @@ export default function MazeGame() {
           (enemy) => enemy.x === next.x && enemy.y === next.y,
         );
         if (monster) {
-          const damage = attackDamage + weaponLevel * 0.5;
-          sounds.attack();
-          addStat("attacks");
-          setMonsters((enemies) =>
-            enemies.flatMap((enemy) =>
-              enemy.id !== monster.id
-                ? [enemy]
-                : enemy.hp <= damage
-                  ? []
-                  : [
-                      {
-                        ...enemy,
-                        hp: Math.round((enemy.hp - damage) * 10) / 10,
-                      },
-                    ],
-            ),
-          );
           return current;
         }
         sounds.step();
@@ -309,7 +294,17 @@ export default function MazeGame() {
     ],
   );
 
-  useMazeControls({ screen, move, setScreen, setCameraMode });
+  const attackMonster = useCallback(() => {
+    if (screen !== "maze") return;
+    sounds.attack();
+    const target = monsters.find((enemy) => Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1);
+    if (!target) return;
+    addStat("attacks");
+    const damage = attackDamage + weaponLevel * 0.5;
+    setMonsters((enemies) => enemies.flatMap((enemy) => enemy.id !== target.id ? [enemy] : enemy.hp <= damage ? [] : [{ ...enemy, hp: Math.round((enemy.hp - damage) * 10) / 10 }]));
+  }, [addStat, attackDamage, monsters, player, screen, weaponLevel]);
+
+  useMazeControls({ screen, move, attack: attackMonster, setScreen, setCameraMode });
 
   const winBattle = (shieldOnly: boolean) => {
     addStat("bosses");
@@ -450,6 +445,12 @@ export default function MazeGame() {
             walkStep={walkStep}
             onMove={move}
           />
+          <button className={`maze-attack-button ${monsterInRange ? "enemy-near" : ""}`} onClick={attackMonster}>
+            ⚔ АТАКОВАТЬ <kbd>ПРОБЕЛ</kbd>
+          </button>
+          <p className={`attack-status ${monsterInRange ? "danger" : ""}`}>
+            {monsterInRange ? "ВРАГ РЯДОМ — ЖМИ ПРОБЕЛ!" : "Подойди к монстру на соседнюю клетку и нажми пробел"}
+          </p>
         </>
       )}
       {screen === "battle" && (
@@ -576,7 +577,7 @@ export default function MazeGame() {
         />
       )}
       {screen === "maze" && (
-        <p className="hint">E / У — рюкзак · Q / Й — переключить камеру</p>
+        <p className="hint"><strong>ПРОБЕЛ — АТАКОВАТЬ</strong> · E / У — рюкзак · Q / Й — переключить камеру</p>
       )}
     </section>
   );

@@ -5,6 +5,7 @@ import { sounds } from '../lib/sounds'
 type Props = {
   screen: string
   move: (dx: number, dy: number) => void
+  attack: () => void
   setScreen: (screen: 'maze' | 'backpack') => void
   setCameraMode: Dispatch<SetStateAction<2 | 3>>
 }
@@ -16,12 +17,15 @@ const keys: Record<string, Point> = {
   ц: { x: 0, y: -1 }, ы: { x: 0, y: 1 }, ф: { x: -1, y: 0 }, в: { x: 1, y: 0 },
 }
 
-export function useMazeControls({ screen, move, setScreen, setCameraMode }: Props) {
+export function useMazeControls({ screen, move, attack, setScreen, setCameraMode }: Props) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || (target instanceof HTMLElement && target.isContentEditable)) return
       const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
+      if (event.code === 'Space' && screen === 'maze') {
+        event.preventDefault(); attack(); return
+      }
       if ((key === 'e' || key === 'у') && (screen === 'maze' || screen === 'backpack')) {
         event.preventDefault(); sounds.menu(); setScreen(screen === 'maze' ? 'backpack' : 'maze'); return
       }
@@ -35,5 +39,5 @@ export function useMazeControls({ screen, move, setScreen, setCameraMode }: Prop
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [move, screen, setCameraMode, setScreen])
+  }, [attack, move, screen, setCameraMode, setScreen])
 }
