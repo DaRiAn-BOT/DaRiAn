@@ -1,0 +1,28 @@
+export type Achievement = { id: string; icon: string; name: string; description: string }
+
+export const achievementList: Achievement[] = [
+  { id: 'first_boss', icon: '⚔', name: 'Первый шаг', description: 'Победить первого босса' },
+  { id: 'seasoned', icon: '♞', name: 'Опытный боец', description: 'Победить 5 боссов' },
+  { id: 'scout', icon: '⌖', name: 'Разведчик', description: 'Сделать 100 шагов' },
+  { id: 'shield_only', icon: '◆', name: 'Только щит', description: 'Победить босса без обычных атак' },
+  { id: 'traveler', icon: '◇', name: 'Путешественник', description: 'Сделать 250 шагов' },
+  { id: 'wanderer', icon: '∞', name: 'Вечный странник', description: 'Сделать 1000 шагов' },
+  { id: 'cartographer', icon: '⌘', name: 'Картограф', description: 'Сделать 2500 шагов' },
+  { id: 'fighter', icon: '†', name: 'Воин', description: 'Использовать обычную атаку 100 раз' },
+  { id: 'blade_master', icon: '‡', name: 'Мастер клинка', description: 'Использовать обычную атаку 250 раз' },
+  { id: 'defender', icon: '◈', name: 'Страж', description: 'Использовать щит 50 раз' },
+  { id: 'iron_wall', icon: '▣', name: 'Железная стена', description: 'Использовать щит 150 раз' },
+  { id: 'fortress', icon: '▰', name: 'Живая крепость', description: 'Использовать щит 300 раз' },
+  { id: 'first_loot', icon: '♦', name: 'Первая находка', description: 'Найти первый предмет снаряжения' },
+  { id: 'collector', icon: '♜', name: 'Коллекционер', description: 'Найти 3 предмета снаряжения' },
+  { id: 'full_arsenal', icon: '♝', name: 'Полный арсенал', description: 'Найти 6 предметов снаряжения' },
+  { id: 'comeback', icon: '↟', name: 'Второй шанс', description: 'Победить босса после первого поражения' },
+  { id: 'persistent', icon: '↻', name: 'Я не сдамся', description: 'Продолжить путь после 3 поражений' },
+  { id: 'veteran', icon: '♛', name: 'Ветеран лабиринта', description: 'Победить 10 боссов' },
+  { id: 'boss_hunter', icon: '♠', name: 'Охотник на стражей', description: 'Победить 15 боссов' },
+  { id: 'endurance', icon: '◷', name: 'Долгий путь', description: 'Провести в прохождении 60 минут' },
+  { id: 'no_defeats', icon: '★', name: 'Непобедимый', description: 'Пройти игру без поражений' },
+  { id: 'weak_gear', icon: '○', name: 'Минималист', description: 'Пройти игру с начальным снаряжением' },
+  { id: 'conqueror', icon: '♚', name: 'Покоритель лабиринта', description: 'Победить финального босса' },
+  { id: 'speedrunner', icon: '»', name: 'Быстрее тени', description: 'Пройти игру быстрее чем за 30 минут' },
+]

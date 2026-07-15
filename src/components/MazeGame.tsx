@@ -1,0 +1,613 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { createMaze, type Point } from "../lib/maze";
+import { armors, shields, weapons, type InventoryItem } from "../lib/equipment";
+import BossBattle from "./BossBattle";
+import BackpackMenu from "./BackpackMenu";
+import MazeBoard from "./MazeBoard";
+import MainMenu from "./MainMenu";
+import GameOver from "./GameOver";
+import { startExplorationMusic, startMusic, stopMusic } from "../lib/music";
+import { loadProgress, saveProgress } from "../lib/saveGame";
+import { sounds } from "../lib/sounds";
+import { storyClues } from "../lib/story";
+import {
+  emptyStats,
+  loadLifetimeStats,
+  saveLifetimeStats,
+  type GameStats,
+  type LifetimeStats,
+} from "../lib/statistics";
+import StatisticsScreen from "./StatisticsScreen";
+import { useMazeControls } from "./useMazeControls";
+import ControlsScreen from "./ControlsScreen";
+import SoundSettings from "./SoundSettings";
+import AchievementsScreen from "./AchievementsScreen";
+import AchievementToast from "./AchievementToast";
+import { useAchievements } from "./useAchievements";
+import { TOTAL_LEVELS } from "../lib/gameConfig";
+import { supabase } from "../lib/supabase";
+import AccountScreen from "./AccountScreen";
+import OpeningCutscene from "./OpeningCutscene";
+import SkinSelection from "./SkinSelection";
+import { loadNickname, NICKNAME_EVENT } from "../lib/playerProfile";
+import {
+  chasePlayer,
+  createMiniMonsters,
+  type MiniMonster,
+} from "../lib/miniMonsters";
+
+type Screen =
+  | "start"
+  | "account"
+  | "statistics"
+  | "achievements"
+  | "controls"
+  | "sound"
+  | "skin-select"
+  | "intro"
+  | "maze"
+  | "clue"
+  | "battle"
+  | "upgrade"
+  | "backpack"
+  | "lost"
+  | "won";
+const equipmentLevels = [5, 7, 10, 14, 15, 20];
+
+export default function MazeGame() {
+  const saved = useMemo(loadProgress, []);
+  const [clues, setClues] = useState(saved?.clues ?? 0);
+  const [attackDamage, setAttackDamage] = useState(saved?.attackDamage ?? 1.5);
+  const [cameraMode, setCameraMode] = useState<2 | 3>(
+    saved?.cameraMode === 2 ? 2 : 3,
+  );
+  const [weaponLevel, setWeaponLevel] = useState(saved?.weaponLevel ?? 0);
+  const [shieldLevel, setShieldLevel] = useState(saved?.shieldLevel ?? 0);
+  const [armorLevel, setArmorLevel] = useState(saved?.armorLevel ?? 0);
+  const [lootFound, setLootFound] = useState(saved?.lootFound ?? false);
+  const [selectedSkin, setSelectedSkin] = useState(saved?.selectedSkin ?? 0);
+  const [facing] = useState<"up" | "down" | "left" | "right">("down");
+  const [walkStep, setWalkStep] = useState(false);
+  const [inventory, setInventory] = useState<InventoryItem[]>(
+    saved?.inventory ?? [
+      { kind: "weapon", level: 0 },
+      { kind: "shield", level: 0 },
+      { kind: "armor", level: 0 },
+    ],
+  );
+  const maze = useMemo(() => createMaze(clues + 1), [clues]);
+  const [monsters, setMonsters] = useState<MiniMonster[]>(
+    saved?.monsters ?? createMiniMonsters(maze, clues + 1),
+  );
+  const mazeMaxHp = 100 + clues * 2.5;
+  const [mazeHp, setMazeHp] = useState(saved?.mazeHp ?? mazeMaxHp);
+  const safeSavedPlayer = getSafePoint(maze, saved?.player);
+  const [player, setPlayer] = useState<Point>(safeSavedPlayer);
+  const [checkpoint, setCheckpoint] = useState<Point>(
+    getSafePoint(maze, saved?.checkpoint ?? safeSavedPlayer),
+  );
+  const [screen, setScreen] = useState<Screen>(
+    saved?.active ? "maze" : "start",
+  );
+  const [runStarted, setRunStarted] = useState(saved?.active ?? false);
+  const [hasLost, setHasLost] = useState(saved?.hasLost ?? false);
+  const [stats, setStats] = useState<GameStats>(saved?.stats ?? emptyStats);
+  const [lifetimeStats, setLifetimeStats] = useState<LifetimeStats>(() =>
+    loadLifetimeStats(saved?.stats),
+  );
+  const [accountEmail, setAccountEmail] = useState<string | null>(null);
+  const [accountNickname, setAccountNickname] = useState<string | null>(
+    loadNickname,
+  );
+  const { achievements, unlock, notification } = useAchievements(
+    saved?.achievements ?? [],
+    stats,
+  );
+  const bossNumber = clues + 1;
+  const addStat = useCallback((key: keyof GameStats) => {
+    setStats((current) => ({ ...current, [key]: current[key] + 1 }));
+    setLifetimeStats((current) => ({ ...current, [key]: current[key] + 1 }));
+  }, []);
+
+  useEffect(() => saveLifetimeStats(lifetimeStats), [lifetimeStats]);
+  useEffect(() => {
+    const setAccount = (email?: string, nickname?: unknown) => {
+      setAccountEmail(email ?? null);
+      setAccountNickname(
+        typeof nickname === "string" && nickname ? nickname : loadNickname(),
+      );
+    };
+    void supabase.auth
+      .getUser()
+      .then(({ data }) =>
+        setAccount(data.user?.email, data.user?.user_metadata.nickname),
+      );
+    const { data } = supabase.auth.onAuthStateChange((_event, session) =>
+      setAccount(session?.user.email, session?.user.user_metadata.nickname),
+    );
+    const updateNickname = (event: Event) =>
+      setAccountNickname((event as CustomEvent<string>).detail);
+    window.addEventListener(NICKNAME_EVENT, updateNickname);
+    return () => {
+      data.subscription.unsubscribe();
+      window.removeEventListener(NICKNAME_EVENT, updateNickname);
+    };
+  }, []);
+
+  useEffect(() => {
+    saveProgress({
+      active: runStarted,
+      clues,
+      attackDamage,
+      cameraMode,
+      cameraAngle: 0,
+      weaponLevel,
+      shieldLevel,
+      armorLevel,
+      lootFound,
+      selectedSkin,
+      facing,
+      inventory,
+      player: screen === "battle" || screen === "clue" ? checkpoint : player,
+      checkpoint,
+      achievements,
+      hasLost,
+      stats,
+      monsters,
+      mazeHp,
+    });
+  }, [
+    achievements,
+    armorLevel,
+    attackDamage,
+    cameraMode,
+    checkpoint,
+    clues,
+    facing,
+    hasLost,
+    inventory,
+    lootFound,
+    mazeHp,
+    monsters,
+    player,
+    runStarted,
+    screen,
+    selectedSkin,
+    shieldLevel,
+    stats,
+    weaponLevel,
+  ]);
+
+  useEffect(() => {
+    if (!runStarted || screen === "start" || screen === "statistics") return;
+    const timer = window.setInterval(() => addStat("seconds"), 1000);
+    return () => window.clearInterval(timer);
+  }, [addStat, runStarted, screen]);
+
+  useEffect(() => {
+    if (screen !== "maze" || !monsters.length) return;
+    const timer = window.setInterval(() => {
+      const moved = chasePlayer(monsters, player, maze.cells);
+      setMonsters(moved);
+      const attackers = moved.filter(
+        (enemy) =>
+          Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1,
+      ).length;
+      if (!attackers) return;
+      sounds.hit();
+      const healthAfterHit = Math.max(0, mazeHp - attackers * 2);
+      if (healthAfterHit > 0) {
+        setMazeHp(healthAfterHit);
+        return;
+      }
+      setMazeHp(mazeMaxHp);
+      setPlayer(checkpoint);
+      setMonsters(createMiniMonsters(maze, clues + 1));
+    }, 700);
+    return () => window.clearInterval(timer);
+  }, [checkpoint, clues, maze, mazeHp, mazeMaxHp, monsters, player, screen]);
+
+  useEffect(() => {
+    if (!saved?.active) return;
+    const resumeMusic = () => {
+      startExplorationMusic();
+      window.removeEventListener("keydown", resumeMusic);
+      window.removeEventListener("pointerdown", resumeMusic);
+    };
+    window.addEventListener("keydown", resumeMusic, { once: true });
+    window.addEventListener("pointerdown", resumeMusic, {
+      once: true,
+      capture: true,
+    });
+    return () => {
+      window.removeEventListener("keydown", resumeMusic);
+      window.removeEventListener("pointerdown", resumeMusic, true);
+    };
+  }, [saved]);
+
+  const move = useCallback(
+    (dx: number, dy: number) => {
+      if (screen !== "maze") return;
+      setPlayer((current) => {
+        const next = { x: current.x + dx, y: current.y + dy };
+        if (!maze.cells[next.y]?.[next.x]) return current;
+        const monster = monsters.find(
+          (enemy) => enemy.x === next.x && enemy.y === next.y,
+        );
+        if (monster) {
+          const damage = attackDamage + weaponLevel * 0.5;
+          sounds.attack();
+          addStat("attacks");
+          setMonsters((enemies) =>
+            enemies.flatMap((enemy) =>
+              enemy.id !== monster.id
+                ? [enemy]
+                : enemy.hp <= damage
+                  ? []
+                  : [
+                      {
+                        ...enemy,
+                        hp: Math.round((enemy.hp - damage) * 10) / 10,
+                      },
+                    ],
+            ),
+          );
+          return current;
+        }
+        sounds.step();
+        addStat("steps");
+        setWalkStep((step) => !step);
+        if (!lootFound && maze.loot?.x === next.x && maze.loot.y === next.y) {
+          sounds.pickup();
+          addStat("items");
+          const currentLevel =
+            maze.loot.kind === "weapon"
+              ? weaponLevel
+              : maze.loot.kind === "shield"
+                ? shieldLevel
+                : armorLevel;
+          const maxLevel =
+            maze.loot.kind === "weapon"
+              ? weapons.length - 1
+              : maze.loot.kind === "shield"
+                ? shields.length - 1
+                : armors.length - 1;
+          const item = {
+            kind: maze.loot.kind,
+            level: Math.min(currentLevel + 1, maxLevel),
+          };
+          if (item.kind === "weapon") setWeaponLevel(item.level);
+          else if (item.kind === "shield") setShieldLevel(item.level);
+          else setArmorLevel(item.level);
+          setInventory((items) =>
+            items.some(
+              (saved) => saved.kind === item.kind && saved.level === item.level,
+            )
+              ? items
+              : [...items, item],
+          );
+          setLootFound(true);
+          setScreen("upgrade");
+        }
+        if (next.x === maze.clue.x && next.y === maze.clue.y) {
+          setCheckpoint(current);
+          setScreen("clue");
+        }
+        return next;
+      });
+    },
+    [
+      addStat,
+      armorLevel,
+      attackDamage,
+      lootFound,
+      maze,
+      monsters,
+      screen,
+      shieldLevel,
+      weaponLevel,
+    ],
+  );
+
+  useMazeControls({ screen, move, setScreen, setCameraMode });
+
+  const winBattle = (shieldOnly: boolean) => {
+    addStat("bosses");
+    if (shieldOnly) unlock("shield_only");
+    if (hasLost) unlock("comeback");
+    if (bossNumber === TOTAL_LEVELS) {
+      setLifetimeStats((current) => ({
+        ...current,
+        victories: current.victories + 1,
+      }));
+      unlock("conqueror");
+      if (stats.seconds < 30 * 60) unlock("speedrunner");
+      if (!hasLost) unlock("no_defeats");
+      if (weaponLevel === 0 && shieldLevel === 0 && armorLevel === 0)
+        unlock("weak_gear");
+      setClues(TOTAL_LEVELS);
+      setRunStarted(false);
+      stopMusic();
+      setScreen("won");
+      return;
+    }
+    const nextMaze = createMaze(bossNumber + 1);
+    setClues(bossNumber);
+    setPlayer(nextMaze.start);
+    setCheckpoint(nextMaze.start);
+    setLootFound(false);
+    setMonsters(createMiniMonsters(nextMaze, bossNumber + 1));
+    setMazeHp(100 + bossNumber * 2.5);
+    setAttackDamage((current) => Math.round((current + 0.3) * 10) / 10);
+    setScreen("maze");
+  };
+  const restart = () => {
+    const first = createMaze(1);
+    stopMusic();
+    setLifetimeStats((current) => ({ ...current, games: current.games + 1 }));
+    setRunStarted(true);
+    setHasLost(false);
+    setStats({ ...emptyStats });
+    setClues(0);
+    setAttackDamage(1.5);
+    setWeaponLevel(0);
+    setShieldLevel(0);
+    setArmorLevel(0);
+    setInventory([
+      { kind: "weapon", level: 0 },
+      { kind: "shield", level: 0 },
+      { kind: "armor", level: 0 },
+    ]);
+    setLootFound(false);
+    setMazeHp(100);
+    setMonsters(createMiniMonsters(first, 1));
+    setPlayer(first.start);
+    setCheckpoint(first.start);
+    setScreen("skin-select");
+  };
+  const exitGame = () => {
+    stopMusic();
+    if (screen !== "maze") setPlayer(checkpoint);
+    setScreen("start");
+  };
+  const continueGame = () => {
+    startExplorationMusic();
+    setScreen("maze");
+  };
+  const showGameOver = () => {
+    setHasLost(true);
+    addStat("defeats");
+    startMusic();
+    setScreen("lost");
+  };
+  const retryBattle = () => {
+    startExplorationMusic();
+    setScreen("battle");
+  };
+  const recordAction = (action: "attack" | "shield") =>
+    addStat(action === "attack" ? "attacks" : "shields");
+  const equip = (item: InventoryItem) => {
+    if (item.kind === "weapon") setWeaponLevel(item.level);
+    else if (item.kind === "shield") setShieldLevel(item.level);
+    else setArmorLevel(item.level);
+  };
+
+  return (
+    <section className="game-shell">
+      {![
+        "start",
+        "account",
+        "statistics",
+        "achievements",
+        "controls",
+        "sound",
+        "skin-select",
+        "intro",
+        "won",
+      ].includes(screen) && (
+        <button
+          className="exit-game"
+          onClick={exitGame}
+          aria-label="Выйти в главное меню"
+        >
+          ×
+        </button>
+      )}
+      <header>
+        <div>
+          <p className="eyebrow">
+            ПРИКЛЮЧЕНИЕ ·{" "}
+            {accountNickname ?? (accountEmail ? "Игрок" : "Гость")}
+          </p>
+          <h1>Тайны лабиринта</h1>
+        </div>
+        <div className="counter">
+          <strong>{clues}</strong>
+          <span>/ {TOTAL_LEVELS} подсказок</span>
+        </div>
+      </header>
+      <div className="progress">
+        <i style={{ width: `${(clues / TOTAL_LEVELS) * 100}%` }} />
+      </div>
+      {screen === "maze" && (
+        <>
+          <div className="checkpoint">
+            ◆ {accountNickname ?? (accountEmail ? "Игрок" : "Гость")} · Чекпоинт
+            сохранён · Страж {bossNumber}
+          </div>
+          <MazeBoard
+            maze={maze}
+            player={player}
+            playerName={accountNickname ?? (accountEmail ? "Игрок" : "Гость")}
+            playerHp={mazeHp}
+            playerMaxHp={mazeMaxHp}
+            checkpoint={checkpoint}
+            monsters={monsters}
+            cameraMode={cameraMode}
+            lootFound={lootFound}
+            skin={selectedSkin}
+            facing={facing}
+            walkStep={walkStep}
+            onMove={move}
+          />
+        </>
+      )}
+      {screen === "battle" && (
+        <BossBattle
+          key={bossNumber}
+          number={bossNumber}
+          attackDamage={attackDamage}
+          heroMaxHp={100 + clues * 2.5}
+          weaponLevel={weaponLevel}
+          shieldLevel={shieldLevel}
+          armorLevel={armorLevel}
+          skin={selectedSkin}
+          onAction={recordAction}
+          onWin={winBattle}
+          onLose={showGameOver}
+        />
+      )}
+      {screen === "clue" && (
+        <Overlay
+          icon="?"
+          title={`Подсказка ${bossNumber} найдена`}
+          text={`${storyClues[bossNumber - 1]}${equipmentLevels.includes(bossNumber + 1) ? " На следующем уровне в одном из тупиков тебя что-то ждёт." : ""}`}
+          button="Приготовиться к бою"
+          onClick={() => setScreen("battle")}
+        />
+      )}
+      {screen === "upgrade" && (
+        <Overlay
+          icon={
+            maze.loot?.kind === "weapon"
+              ? "⚔"
+              : maze.loot?.kind === "armor"
+                ? "♟"
+                : "◆"
+          }
+          title="Снаряжение найдено!"
+          text={
+            maze.loot?.kind === "weapon"
+              ? `${weapons[weaponLevel].name}: ${weapons[weaponLevel].effect}`
+              : maze.loot?.kind === "armor"
+                ? `${armors[armorLevel].name}: ${armors[armorLevel].effect}`
+                : `${shields[shieldLevel].name}: ${shields[shieldLevel].effect}`
+          }
+          button="Продолжить путь"
+          onClick={() => setScreen("maze")}
+        />
+      )}
+      {screen === "backpack" && (
+        <BackpackMenu
+          items={inventory}
+          equipped={{
+            weapon: weaponLevel,
+            shield: shieldLevel,
+            armor: armorLevel,
+          }}
+          onEquip={equip}
+          onClose={() => setScreen("maze")}
+        />
+      )}
+      {screen === "start" && (
+        <MainMenu
+          canContinue={runStarted}
+          accountEmail={accountEmail}
+          onStart={() => (accountEmail ? restart() : setScreen("account"))}
+          onContinue={continueGame}
+          onAchievements={() => setScreen("achievements")}
+          onStats={() => setScreen("statistics")}
+          onSound={() => setScreen("sound")}
+          onAccount={() => setScreen("account")}
+        />
+      )}
+      {screen === "account" && (
+        <AccountScreen
+          email={accountEmail}
+          nickname={accountNickname}
+          onNicknameChange={setAccountNickname}
+          onClose={() => setScreen("start")}
+          onGuest={restart}
+        />
+      )}
+      {screen === "achievements" && (
+        <AchievementsScreen
+          unlocked={achievements}
+          onClose={() => setScreen("start")}
+        />
+      )}
+      {screen === "statistics" && (
+        <StatisticsScreen
+          stats={stats}
+          lifetime={lifetimeStats}
+          onClose={() => setScreen("start")}
+        />
+      )}
+      {screen === "controls" && (
+        <ControlsScreen onClose={() => setScreen("start")} />
+      )}
+      {screen === "sound" && (
+        <SoundSettings
+          onClose={() => setScreen("start")}
+          onControls={() => setScreen("controls")}
+        />
+      )}
+      {screen === "intro" && (
+        <OpeningCutscene onFinish={() => { startExplorationMusic(); setScreen("maze"); }} />
+      )}
+      {screen === "skin-select" && (
+        <SkinSelection selectedSkin={selectedSkin} onSelect={setSelectedSkin} onConfirm={() => setScreen("intro")} />
+      )}
+      {notification && <AchievementToast achievement={notification} />}
+      {screen === "lost" && (
+        <GameOver
+          bossNumber={bossNumber}
+          onRetry={retryBattle}
+          onExit={exitGame}
+        />
+      )}
+      {screen === "won" && (
+        <Overlay
+          icon="♛"
+          title="Лабиринт пройден!"
+          text={`Все ${TOTAL_LEVELS} подсказок найдены, а Король Лабиринта побеждён. Игра завершена!`}
+          button="Начать заново"
+          onClick={restart}
+        />
+      )}
+      {screen === "maze" && (
+        <p className="hint">E / У — рюкзак · Q / Й — переключить камеру</p>
+      )}
+    </section>
+  );
+}
+
+function Overlay({
+  icon,
+  title,
+  text,
+  button,
+  onClick,
+}: {
+  icon: string;
+  title: string;
+  text: string;
+  button: string;
+  onClick: () => void;
+}) {
+  return (
+    <div className="story-card">
+      <span>{icon}</span>
+      <h2>{title}</h2>
+      <p>{text}</p>
+      <button onClick={onClick}>{button}</button>
+    </div>
+  );
+}
+
+function getSafePoint(
+  maze: ReturnType<typeof createMaze>,
+  point?: Point,
+): Point {
+  return point && maze.cells[point.y]?.[point.x] ? point : maze.start;
+}
