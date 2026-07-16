@@ -6,7 +6,7 @@ const steps = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }]
 
 export function createMiniMonsters(maze: Maze, level: number): MiniMonster[] {
   const hp = 2 + (level - 1) * .5
-  const cells = maze.cells.flatMap((row, y) => row.flatMap((open, x) => open && Math.hypot(x - maze.start.x, y - maze.start.y) > 5 && (x !== maze.clue.x || y !== maze.clue.y) ? [{ x, y }] : []))
+  const cells = maze.cells.flatMap((row, y) => row.flatMap((open, x) => open && Math.hypot(x - maze.start.x, y - maze.start.y) > 5 && (x !== maze.clue.x || y !== maze.clue.y) && (x !== maze.potion.x || y !== maze.potion.y) ? [{ x, y }] : []))
   const count = 5
   return Array.from({ length: Math.min(count, cells.length) }, (_, id) => {
     const point = cells[Math.floor((id + 1) * cells.length / (count + 1))]

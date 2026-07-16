@@ -3,14 +3,14 @@ import HeroModel from './HeroModel'
 import type { MiniMonster } from '../lib/miniMonsters'
 
 type Facing = 'up' | 'down' | 'left' | 'right'
-type Props = { maze: Maze; player: Point; playerName: string; playerHp: number; playerMaxHp: number; checkpoint: Point; monsters: MiniMonster[]; cameraMode: 2 | 3; lootFound: boolean; skin: number; facing: Facing; walkStep: boolean; attackAnimation: boolean; hitMonsterId: number | null; onMove: (dx: number, dy: number) => void }
+type Props = { maze: Maze; player: Point; playerName: string; playerHp: number; playerMaxHp: number; checkpoint: Point; monsters: MiniMonster[]; cameraMode: 2 | 3; lootFound: boolean; potionFound: boolean; skin: number; facing: Facing; walkStep: boolean; attackAnimation: boolean; hitMonsterId: number | null; onMove: (dx: number, dy: number) => void }
 const controls = [
   { label: '↑', dx: 0, dy: -1, className: 'up' }, { label: '←', dx: -1, dy: 0, className: 'left' },
   { label: '↓', dx: 0, dy: 1, className: 'down' }, { label: '→', dx: 1, dy: 0, className: 'right' },
 ]
 const CELL_SIZE = 36
 
-export default function MazeBoard({ maze, player, playerName, playerHp, playerMaxHp, checkpoint, monsters, cameraMode, lootFound, skin, facing, walkStep, attackAnimation, hitMonsterId, onMove }: Props) {
+export default function MazeBoard({ maze, player, playerName, playerHp, playerMaxHp, checkpoint, monsters, cameraMode, lootFound, potionFound, skin, facing, walkStep, attackAnimation, hitMonsterId, onMove }: Props) {
   const cameraScale = cameraMode === 2 ? 2.15 : 1.15
   const playerOffset = `translate(-${(player.x + .5) * CELL_SIZE}px, -${(player.y + .5) * CELL_SIZE}px)`
   const cameraTransform = cameraMode === 2
@@ -32,6 +32,7 @@ export default function MazeBoard({ maze, player, playerName, playerHp, playerMa
           const isCheckpoint = checkpoint.x === x && checkpoint.y === y
           const monster = monsters.find((enemy) => enemy.x === x && enemy.y === y)
           const isLoot = !lootFound && maze.loot?.x === x && maze.loot.y === y
+          const isPotion = !potionFound && maze.potion.x === x && maze.potion.y === y
           const distance = Math.hypot(player.x - x, player.y - y)
           const lightRadius = 2
           const darkness = distance <= lightRadius ? 0 : 1
@@ -40,6 +41,7 @@ export default function MazeBoard({ maze, player, playerName, playerHp, playerMa
             {isCheckpoint && <span className="checkpoint-marker" title="Чекпоинт">◆</span>}
             {monster && <span className={`mini-monster ${hitMonsterId === monster.id ? 'monster-hit' : ''}`} title={`Мини-монстр: ${monster.hp} HP`}><i /><b>{monster.hp.toFixed(1).replace('.0', '')}</b></span>}
             {isLoot && <span className="loot">{maze.loot?.kind === 'weapon' ? '⚔' : maze.loot?.kind === 'armor' ? '♟' : '◆'}</span>}
+            {isPotion && <span className="health-potion" title="Зелёное зелье: +15 HP"><i /></span>}
             <span className="fog" style={{ opacity: darkness }} />
           </div>
         }))}

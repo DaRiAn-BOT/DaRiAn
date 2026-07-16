@@ -66,6 +66,7 @@ export default function MazeGame() {
   const [shieldLevel, setShieldLevel] = useState(saved?.shieldLevel ?? 0);
   const [armorLevel, setArmorLevel] = useState(saved?.armorLevel ?? 0);
   const [lootFound, setLootFound] = useState(saved?.lootFound ?? false);
+  const [potionFound, setPotionFound] = useState(saved?.potionFound ?? false);
   const [selectedSkin, setSelectedSkin] = useState(saved?.selectedSkin ?? 0);
   const [facing] = useState<"up" | "down" | "left" | "right">("down");
   const [walkStep, setWalkStep] = useState(false);
@@ -159,6 +160,7 @@ export default function MazeGame() {
       stats,
       monsters,
       mazeHp,
+      potionFound,
     });
   }, [
     achievements,
@@ -174,6 +176,7 @@ export default function MazeGame() {
     mazeHp,
     monsters,
     player,
+    potionFound,
     runStarted,
     screen,
     selectedSkin,
@@ -244,6 +247,11 @@ export default function MazeGame() {
         sounds.step();
         addStat("steps");
         setWalkStep((step) => !step);
+        if (!potionFound && mazeHp < mazeMaxHp && maze.potion.x === next.x && maze.potion.y === next.y) {
+          sounds.pickup();
+          setMazeHp((health) => Math.min(mazeMaxHp, health + 15));
+          setPotionFound(true);
+        }
         if (!lootFound && maze.loot?.x === next.x && maze.loot.y === next.y) {
           sounds.pickup();
           addStat("items");
@@ -290,6 +298,9 @@ export default function MazeGame() {
       lootFound,
       maze,
       monsters,
+      mazeMaxHp,
+      mazeHp,
+      potionFound,
       screen,
       shieldLevel,
       weaponLevel,
@@ -337,6 +348,7 @@ export default function MazeGame() {
     setPlayer(nextMaze.start);
     setCheckpoint(nextMaze.start);
     setLootFound(false);
+    setPotionFound(false);
     setMonsters(createMiniMonsters(nextMaze, bossNumber + 1));
     setMazeHp(100 + bossNumber * 2.5);
     setAttackDamage((current) => Math.round((current + 0.3) * 10) / 10);
@@ -360,6 +372,7 @@ export default function MazeGame() {
       { kind: "armor", level: 0 },
     ]);
     setLootFound(false);
+    setPotionFound(false);
     setMazeHp(100);
     setMonsters(createMiniMonsters(first, 1));
     setPlayer(first.start);
@@ -392,6 +405,23 @@ export default function MazeGame() {
     else if (item.kind === "shield") setShieldLevel(item.level);
     else setArmorLevel(item.level);
   };
+
+  useEffect(() => {
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.code !== "Escape" || screen === "start") return;
+      event.preventDefault();
+      sounds.menu();
+      if (screen === "backpack") {
+        setScreen("maze");
+        return;
+      }
+      stopMusic();
+      if (screen !== "maze") setPlayer(checkpoint);
+      setScreen("start");
+    };
+    window.addEventListener("keydown", closeWithEscape);
+    return () => window.removeEventListener("keydown", closeWithEscape);
+  }, [checkpoint, screen]);
 
   return (
     <section className="game-shell">
@@ -446,6 +476,7 @@ export default function MazeGame() {
             monsters={monsters}
             cameraMode={cameraMode}
             lootFound={lootFound}
+            potionFound={potionFound}
             skin={selectedSkin}
             facing={facing}
             walkStep={walkStep}
@@ -454,7 +485,9 @@ export default function MazeGame() {
             onMove={move}
           />
           <button className={`maze-attack-button ${monsterInRange ? "enemy-near" : ""}`} onClick={attackMonster}>
-            ⚔ АТАКОВАТЬ <kbd>ПРОБЕЛ</kbd>
+            <span className="attack-icon" aria-hidden="true">⚔</span>
+            <span className="attack-copy"><strong>АТАКОВАТЬ</strong><small>{monsterInRange ? "ВРАГ В ЗОНЕ УДАРА" : "БЛИЖНИЙ УДАР"}</small></span>
+            <kbd>ПРОБЕЛ</kbd>
           </button>
           <p className={`attack-status ${monsterInRange ? "danger" : ""}`}>
             {monsterInRange ? "ВРАГ РЯДОМ — ЖМИ ПРОБЕЛ!" : "Подойди к монстру на соседнюю клетку и нажми пробел"}

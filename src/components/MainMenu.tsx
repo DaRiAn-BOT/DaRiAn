@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TOTAL_LEVELS } from '../lib/gameConfig'
 import { useLanguage } from '../lib/languageSettings'
 
@@ -14,6 +14,14 @@ export default function MainMenu({ canContinue, accountEmail, onStart, onContinu
   const [confirmNewGame, setConfirmNewGame] = useState(false)
   const text = labels[useLanguage()]
   const startGame = () => canContinue ? setConfirmNewGame(true) : onStart()
+  useEffect(() => {
+    if (!confirmNewGame) return
+    const cancelWithEscape = (event: KeyboardEvent) => {
+      if (event.code === 'Escape') { event.preventDefault(); setConfirmNewGame(false) }
+    }
+    window.addEventListener('keydown', cancelWithEscape)
+    return () => window.removeEventListener('keydown', cancelWithEscape)
+  }, [confirmNewGame])
   return <div className="story-card main-menu">
     <span>◇</span><p className="eyebrow">{text.eyebrow}</p><h2>{text.title}</h2><p>{text.description}</p>
     <div className="menu-actions">

@@ -1,6 +1,6 @@
 export type Point = { x: number; y: number }
 export type Loot = Point & { kind: 'weapon' | 'shield' | 'armor' }
-export type Maze = { cells: boolean[][]; start: Point; clue: Point; loot?: Loot }
+export type Maze = { cells: boolean[][]; start: Point; clue: Point; loot?: Loot; potion: Point }
 
 const directions = [{ x: 2, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 2 }, { x: 0, y: -2 }]
 
@@ -36,7 +36,9 @@ export function createMaze(level: number): Maze {
   const lootPoint = level % 5 === 0 || hasArmor ? deadEnds[Math.floor(rng() * deadEnds.length)] : undefined
   const kind = hasArmor ? 'armor' as const : level % 10 === 0 ? 'shield' as const : 'weapon' as const
   const loot = lootPoint ? { ...lootPoint, kind } : undefined
-  return { cells, start: { x: 1, y: 1 }, clue, loot }
+  const potionChoices = deadEnds.filter(({ x, y }) => !lootPoint || x !== lootPoint.x || y !== lootPoint.y)
+  const potion = potionChoices[Math.floor(rng() * potionChoices.length)] ?? deadEnds[0] ?? { x: 1, y: 1 }
+  return { cells, start: { x: 1, y: 1 }, clue, loot, potion }
 }
 
 function findDeadEnds(cells: boolean[][]): Point[] {
