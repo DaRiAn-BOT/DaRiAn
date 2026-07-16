@@ -665,9 +665,9 @@ function getSafePoint(
 }
 
 async function enableLandscapeMode() {
+  try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen(); } catch { /* Fullscreen может быть запрещён. */ }
   try {
-    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
     const orientation = screen.orientation as ScreenOrientation & { lock?: (mode: "landscape") => Promise<void> };
     await orientation.lock?.("landscape");
-  } catch { /* Некоторые браузеры не разрешают принудительный поворот. */ }
+  } catch { /* Используется CSS-поворот ниже. */ }
 }
