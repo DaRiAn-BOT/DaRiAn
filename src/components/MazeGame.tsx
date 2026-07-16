@@ -94,7 +94,7 @@ export default function MazeGame() {
     getSafePoint(maze, saved?.checkpoint ?? safeSavedPlayer),
   );
   const [screen, setScreen] = useState<Screen>(
-    saved?.active ? "maze" : "start",
+    () => screenFromPath(saved?.active ?? false),
   );
   const [runStarted, setRunStarted] = useState(saved?.active ?? false);
   const [hasLost, setHasLost] = useState(saved?.hasLost ?? false);
@@ -118,6 +118,16 @@ export default function MazeGame() {
   }, []);
 
   useEffect(() => saveLifetimeStats(lifetimeStats), [lifetimeStats]);
+  useEffect(() => {
+    const path = pathForScreen(screen);
+    if (window.location.pathname !== path) window.history.pushState({ screen }, "", path);
+    document.title = titleForScreen(screen);
+  }, [screen]);
+  useEffect(() => {
+    const openBrowserPage = () => setScreen(screenFromPath(runStarted));
+    window.addEventListener("popstate", openBrowserPage);
+    return () => window.removeEventListener("popstate", openBrowserPage);
+  }, [runStarted]);
   useEffect(() => {
     const setAccount = (email?: string, nickname?: unknown) => {
       setAccountEmail(email ?? null);
@@ -430,6 +440,7 @@ export default function MazeGame() {
 
   return (
     <section className={`game-shell ${controlMode === "phone" ? "phone-controls" : "computer-controls"}`}>
+      {screen !== "device-select" && <button className="fullscreen-toggle" onClick={() => void toggleFullscreen(controlMode)} aria-label="Переключить полноэкранный режим">⛶</button>}
       {![
         "start",
         "account",
@@ -665,9 +676,43 @@ function getSafePoint(
 }
 
 async function enableLandscapeMode() {
-  try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen(); } catch { /* Fullscreen может быть запрещён. */ }
+  try {
+    const element = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void };
+    if (!document.fullscreenElement) {
+      if (element.requestFullscreen) await element.requestFullscreen();
+      else await element.webkitRequestFullscreen?.();
+    }
+  } catch { /* Fullscreen может быть запрещён. */ }
   try {
     const orientation = screen.orientation as ScreenOrientation & { lock?: (mode: "landscape") => Promise<void> };
     await orientation.lock?.("landscape");
   } catch { /* Используется CSS-поворот ниже. */ }
+}
+
+async function toggleFullscreen(mode: 'computer' | 'phone') {
+  if (document.fullscreenElement) { await document.exitFullscreen(); return; }
+  if (mode === 'phone') await enableLandscapeMode();
+  else try { await document.documentElement.requestFullscreen(); } catch { /* Запрос отклонён браузером. */ }
+}
+
+function pathForScreen(screen: Screen) {
+  if (screen === 'start') return '/';
+  if (screen === 'sound') return '/settings';
+  if (screen === 'account') return '/account';
+  if (screen === 'achievements') return '/achievements';
+  if (screen === 'statistics') return '/statistics';
+  if (screen === 'controls') return '/controls';
+  return '/play';
+}
+
+function screenFromPath(hasSave: boolean): Screen {
+  const pages: Record<string, Screen> = { '/settings': 'sound', '/account': 'account', '/achievements': 'achievements', '/statistics': 'statistics', '/controls': 'controls' };
+  if (pages[window.location.pathname]) return pages[window.location.pathname];
+  if (window.location.pathname === '/play') return hasSave ? 'maze' : 'start';
+  return hasSave ? 'maze' : 'start';
+}
+
+function titleForScreen(screen: Screen) {
+  const names: Partial<Record<Screen, string>> = { start: 'Тайны лабиринта', sound: 'Настройки', account: 'Аккаунт', achievements: 'Достижения', statistics: 'Статистика', controls: 'Управление' };
+  return `${names[screen] ?? 'Лабиринт'} — Тайны лабиринта`;
 }
