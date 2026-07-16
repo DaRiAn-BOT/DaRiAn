@@ -216,26 +216,31 @@ export default function MazeGame() {
 
   useEffect(() => {
     if (screen !== "maze" || !monsters.length) return;
+    const moveTimer = window.setInterval(() => {
+      setMonsters((current) => chasePlayer(current, player, maze.cells));
+    }, controlMode === "phone" ? 700 : 500);
+    return () => window.clearInterval(moveTimer);
+  }, [controlMode, maze.cells, monsters.length, player, screen]);
+
+  useEffect(() => {
+    if (screen !== "maze" || !monsters.length) return;
     const timer = window.setInterval(() => {
-      const moved = chasePlayer(monsters, player, maze.cells);
-      setMonsters(moved);
-      const attackers = moved.filter(
+      const attackers = monsters.filter(
         (enemy) =>
           Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1,
       ).length;
       if (!attackers) return;
       sounds.hit();
-      const healthAfterHit = Math.max(0, mazeHp - attackers * MINI_MONSTER_DAMAGE);
-      if (healthAfterHit > 0) {
-        setMazeHp(healthAfterHit);
-        return;
-      }
-      setMazeHp(mazeMaxHp);
-      setPlayer(checkpoint);
-      setMonsters(createMiniMonsters(maze, clues + 1));
+      setMazeHp((health) => {
+        const healthAfterHit = Math.max(0, health - attackers * MINI_MONSTER_DAMAGE);
+        if (healthAfterHit > 0) return healthAfterHit;
+        setPlayer(checkpoint);
+        setMonsters(createMiniMonsters(maze, clues + 1));
+        return mazeMaxHp;
+      });
     }, 300);
     return () => window.clearInterval(timer);
-  }, [checkpoint, clues, maze, mazeHp, mazeMaxHp, monsters, player, screen]);
+  }, [checkpoint, clues, maze, mazeMaxHp, monsters, player, screen]);
 
   useEffect(() => {
     if (!saved?.active) return;

@@ -20,6 +20,10 @@ html:-webkit-full-screen, html:-webkit-full-screen *, body:-webkit-full-screen, 
   .phone-controls .battle-actions { position: fixed; z-index: 50; right: 28px; bottom: 24px; display: flex; flex-direction: column-reverse; width: 125px; margin: 0; }
   .phone-controls .battle-actions button { width: 125px; min-height: 72px; padding: 9px; font-size: 10px; }
   .phone-controls .battle-card { max-height: 96vh; overflow-y: auto; }
+  .phone-controls .mini-monster, .phone-controls .health-potion, .phone-controls .clue { animation: none; }
+  .phone-controls .fog { transition: none; }
+  .phone-controls .maze-camera { box-shadow: 0 8px 20px #000, inset 0 0 18px #000; }
+  .phone-controls .wall, .phone-controls .path { box-shadow: inset 2px 2px 2px #ffffff12, inset -2px -2px 3px #000b; }
 }
 @media (orientation: portrait) and (max-width: 700px) {
   body .game-shell.phone-controls { position: fixed; z-index: 30; left: 50%; top: 50%; width: 100vh; height: 100vw; max-width: none; padding: 5px 130px; overflow: auto; transform: translate(-50%, -50%) rotate(90deg); transform-origin: center; background: #050806; }
@@ -32,6 +36,10 @@ html:-webkit-full-screen, html:-webkit-full-screen *, body:-webkit-full-screen, 
   .phone-controls .battle-actions { position: fixed; z-index: 50; right: 25px; bottom: 20px; display: flex; flex-direction: column-reverse; width: 120px; margin: 0; }
   .phone-controls .battle-actions button { width: 120px; min-height: 68px; padding: 8px; font-size: 10px; }
   .phone-controls .battle-card, .phone-controls .story-card { max-height: calc(100vw - 10px); overflow-y: auto; }
+  .phone-controls .mini-monster, .phone-controls .health-potion, .phone-controls .clue { animation: none; }
+  .phone-controls .fog { transition: none; }
+  .phone-controls .maze-camera { box-shadow: 0 8px 20px #000, inset 0 0 18px #000; }
+  .phone-controls .wall, .phone-controls .path { box-shadow: inset 2px 2px 2px #ffffff12, inset -2px -2px 3px #000b; }
 }
 @media (max-width: 520px) { .device-options { grid-template-columns: 1fr; }.device-options button { min-height: 105px; } }
 /* Единый пиксельный стиль игры */
