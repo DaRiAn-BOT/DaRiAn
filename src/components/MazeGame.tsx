@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createMaze, type Point } from "../lib/maze";
 import { armors, shields, weapons, type InventoryItem } from "../lib/equipment";
 import BossBattle from "./BossBattle";
@@ -87,10 +87,12 @@ export default function MazeGame() {
   const [monsters, setMonsters] = useState<MiniMonster[]>(
     saved?.monsters ?? createMiniMonsters(maze, clues + 1),
   );
+  const monstersRef = useRef(monsters);
   const mazeMaxHp = 100 + clues * 2.5;
   const [mazeHp, setMazeHp] = useState(saved?.mazeHp ?? mazeMaxHp);
   const safeSavedPlayer = getSafePoint(maze, saved?.player);
   const [player, setPlayer] = useState<Point>(safeSavedPlayer);
+  const playerRef = useRef(player);
   const [checkpoint, setCheckpoint] = useState<Point>(
     getSafePoint(maze, saved?.checkpoint ?? safeSavedPlayer),
   );
@@ -119,6 +121,8 @@ export default function MazeGame() {
   }, []);
 
   useEffect(() => saveLifetimeStats(lifetimeStats), [lifetimeStats]);
+  useEffect(() => { monstersRef.current = monsters; }, [monsters]);
+  useEffect(() => { playerRef.current = player; }, [player]);
   useEffect(() => {
     const detectFullscreen = () => setFullscreenActive(Boolean(document.fullscreenElement) || Math.abs(window.innerHeight - window.screen.height) < 5);
     detectFullscreen();
@@ -217,17 +221,18 @@ export default function MazeGame() {
   useEffect(() => {
     if (screen !== "maze" || !monsters.length) return;
     const moveTimer = window.setInterval(() => {
-      setMonsters((current) => chasePlayer(current, player, maze.cells));
-    }, controlMode === "phone" ? 700 : 500);
+      setMonsters((current) => chasePlayer(current, playerRef.current, maze.cells));
+    }, controlMode === "phone" ? 900 : 500);
     return () => window.clearInterval(moveTimer);
-  }, [controlMode, maze.cells, monsters.length, player, screen]);
+  }, [controlMode, maze.cells, monsters.length, screen]);
 
   useEffect(() => {
     if (screen !== "maze" || !monsters.length) return;
     const timer = window.setInterval(() => {
-      const attackers = monsters.filter(
+      const currentPlayer = playerRef.current;
+      const attackers = monstersRef.current.filter(
         (enemy) =>
-          Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1,
+          Math.abs(enemy.x - currentPlayer.x) + Math.abs(enemy.y - currentPlayer.y) === 1,
       ).length;
       if (!attackers) return;
       sounds.hit();
@@ -240,7 +245,7 @@ export default function MazeGame() {
       });
     }, 300);
     return () => window.clearInterval(timer);
-  }, [checkpoint, clues, maze, mazeMaxHp, monsters, player, screen]);
+  }, [checkpoint, clues, maze, mazeMaxHp, monsters.length, screen]);
 
   useEffect(() => {
     if (!saved?.active) return;
