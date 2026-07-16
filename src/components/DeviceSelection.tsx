@@ -9,6 +9,7 @@ export default function DeviceSelection({ onComputer, onPhone }: Props) {
         <button onClick={onComputer}><b>▰</b><strong>Игра на компьютере</strong><small>Клавиатура и обычный экран</small></button>
         <button onClick={onPhone}><b>▯</b><strong>Игра на телефоне</strong><small>Горизонтальный экран и сенсорные кнопки</small></button>
       </div>
+      <p className="ios-fullscreen-tip">На iPhone: нажми «Поделиться» → «На экран Домой», затем запускай игру через её значок — она откроется без панели браузера.</p>
     </div>
   </div>
 }

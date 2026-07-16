@@ -1,0 +1,12 @@
+{
+  "name": "Тайны лабиринта",
+  "short_name": "Лабиринт",
+  "description": "Тёмное приключение по древнему лабиринту",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#050806",
+  "theme_color": "#050806",
+  "icons": [{ "src": "/maze-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

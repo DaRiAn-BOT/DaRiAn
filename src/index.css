@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+.device-select-card .ios-fullscreen-tip { margin: 18px auto 0; color: #d7c58f; font-size: 10px; line-height: 1.5; }
 .health-potion { position: relative; z-index: 2; display: block; width: 46%; height: 58%; border: 2px solid #b9e6c2; border-radius: 3px 3px 8px 8px; background: linear-gradient(90deg, #126b35, #38d56f 45%, #0b7b3a); box-shadow: inset 3px 2px #ffffff55, inset -3px -2px #06391d, 0 0 12px #39ff79aa; animation: potion-glow 1.2s ease-in-out infinite alternate; }
 .health-potion::before { content: ''; position: absolute; left: 18%; top: -30%; width: 64%; height: 30%; border: 2px solid #b9e6c2; background: #315b42; }
 .health-potion i { position: absolute; left: 30%; top: 28%; width: 40%; height: 35%; background: #c7ffcf; clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%); }
