@@ -7,13 +7,13 @@ import HeroModel from './HeroModel'
 import EquipmentIcon from './EquipmentIcon'
 import { bossDialogues } from '../lib/bossDialogues'
 
-type Props = { number: number; attackDamage: number; heroStartHp: number; heroMaxHp: number; weaponLevel: number; shieldLevel: number; armorLevel: number; skin: number; onAction: (action: 'attack' | 'shield') => void; onWin: (shieldOnly: boolean) => void; onLose: () => void }
+type Props = { number: number; attackDamage: number; heroStartHp: number; heroMaxHp: number; weaponLevel: number; shieldLevel: number; armorLevel: number; skin: number; onAction: (action: 'attack' | 'shield') => void; onHeroHealthChange: (health: number) => void; onWin: (shieldOnly: boolean) => void; onLose: () => void }
 const formatNumber = (value: number) => Number(value.toFixed(1)).toLocaleString('ru-RU')
 
-export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxHp, weaponLevel, shieldLevel, armorLevel, skin, onAction, onWin, onLose }: Props) {
+export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxHp, weaponLevel, shieldLevel, armorLevel, skin, onAction, onHeroHealthChange, onWin, onLose }: Props) {
   const finalBoss = number === TOTAL_LEVELS
-  const bossMax = 15 + (number - 1) * 2.2 + (finalBoss ? 8 : 0)
-  const fullBossDamage = 6 + (number - 1) * .35 + (finalBoss ? -.7 : 0)
+  const bossMax = 15 + (number - 1) * 2.45 + Math.max(0, number - 10) * .18 + (finalBoss ? 8 : 0)
+  const fullBossDamage = 6 + (number - 1) * .38 + (finalBoss ? -.7 : 0)
   const [bossHp, setBossHp] = useState(bossMax)
   const [heroHp, setHeroHp] = useState(Math.min(heroStartHp, heroMaxHp))
   const [message, setMessage] = useState('Босс готовится атаковать первым!')
@@ -30,6 +30,8 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
   const powerAttackChance = finalBoss ? .45 : .35
   const ability = finalBoss ? 'Королевская ярость: при ранении сильнее атакует и ослабляет щит' : ['Каменная кожа: снижает урон', 'Тяжёлый удар: наносит больше урона', 'Ярость: сильнее при низком HP', 'Крушитель: ослабляет щит'][(number - 1) % 4]
 
+  useEffect(() => setHeroHp(Math.min(heroStartHp, heroMaxHp)), [heroStartHp, heroMaxHp])
+
   useEffect(() => {
     if (!combatStarted) return
     const timer = window.setTimeout(() => {
@@ -37,6 +39,7 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
       powerAttackReady.current = Math.random() < powerAttackChance
       setPowerWarning(powerAttackReady.current)
       setHeroHp(healthAfterHit)
+      onHeroHealthChange(healthAfterHit)
       setMessage(`Босс атаковал первым и нанёс ${formatNumber(fullBossDamage)} урона.${powerAttackReady.current ? ' Он готовит мощный удар — используй щит!' : ' Твой ход!'}`)
       if (!healthAfterHit) window.setTimeout(onLose, 650)
       else setBusy(false)
@@ -76,10 +79,11 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
       setAttackAnimation(true); setBossHitAnimation(true)
       window.setTimeout(() => { setAttackAnimation(false); setBossHitAnimation(false) }, 800)
     }
-    const weaponBonus = weaponLevel >= 1 ? .5 : 0
-    const fireBonus = weaponLevel >= 2 ? 1 : 0
+    const weaponBonus = weaponLevel === 3 ? 2 : weaponLevel >= 1 ? .5 : 0
+    const fireBonus = weaponLevel === 2 ? 1 : 0
     const skinReduction = !defending && !finalBoss && (number - 1) % 4 === 0 ? .5 : 0
-    const damage = defending ? .5 + shieldLevel * .5 : Math.max(.5, attackDamage + weaponBonus + fireBonus - skinReduction + (superAttack ? 2.5 : 0))
+    const counterDamage = shieldLevel === 3 ? 2.5 : .5 + shieldLevel * .5
+    const damage = defending ? counterDamage : Math.max(.5, attackDamage + weaponBonus + fireBonus - skinReduction + (superAttack ? 2.5 : 0))
     const nextBossHp = Math.max(0, bossHp - damage)
     setBossHp(nextBossHp)
     if (!nextBossHp) { setMessage('Победа!'); setWinning(true); sounds.victory(); window.setTimeout(() => onWin(!usedAttack.current), 1500); return }
@@ -88,13 +92,15 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     const rageDamage = fullBossDamage + (isRaging ? (finalBoss ? 3.5 : 2) : 0) + heavyDamage
     const shieldBlock = 4 + shieldLevel - (!finalBoss && (number - 1) % 4 === 3 ? 2 : 0) - (finalBoss && isRaging ? 1 : 0)
     const incomingDamage = defending ? Math.max(2, rageDamage - shieldBlock) : rageDamage * (isPowerAttack ? 3 : 1)
+    const armorReduction = armorLevel === 3 ? 3 : armorLevel * 1.5
     const bossDamage = isPowerAttack && !defending
       ? heroHp
-      : Math.max(.5, incomingDamage - armorLevel * 1.5)
+      : Math.max(.5, incomingDamage - armorReduction)
     const nextHeroHp = Math.max(0, heroHp - bossDamage)
     window.setTimeout(() => {
       sounds.hit()
       setHeroHp(nextHeroHp)
+      onHeroHealthChange(nextHeroHp)
       powerAttackReady.current = Math.random() < powerAttackChance
       setPowerWarning(powerAttackReady.current)
       const warning = powerAttackReady.current ? ' Босс готовит мощный удар — используй щит!' : ''

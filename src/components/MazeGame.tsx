@@ -30,6 +30,7 @@ import AccountScreen from "./AccountScreen";
 import OpeningCutscene from "./OpeningCutscene";
 import SkinSelection from "./SkinSelection";
 import DeviceSelection from "./DeviceSelection";
+import ShopScreen from "./ShopScreen";
 import { loadNickname, NICKNAME_EVENT } from "../lib/playerProfile";
 import {
   chasePlayer,
@@ -45,6 +46,7 @@ type Screen =
   | "achievements"
   | "controls"
   | "sound"
+  | "shop"
   | "device-select"
   | "skin-select"
   | "intro"
@@ -70,6 +72,7 @@ export default function MazeGame() {
   const [lootFound, setLootFound] = useState(saved?.lootFound ?? false);
   const [potionFound, setPotionFound] = useState(saved?.potionFound ?? false);
   const [potions, setPotions] = useState(saved?.potions ?? 0);
+  const [sealShards, setSealShards] = useState(saved?.sealShards ?? 0);
   const [selectedSkin, setSelectedSkin] = useState(saved?.selectedSkin ?? 0);
   const [controlMode, setControlMode] = useState<'computer' | 'phone'>(saved?.controlMode ?? 'computer');
   const [fullscreenActive, setFullscreenActive] = useState(false);
@@ -190,6 +193,7 @@ export default function MazeGame() {
       potionFound,
       potions,
       controlMode,
+      sealShards,
     });
   }, [
     achievements,
@@ -197,6 +201,7 @@ export default function MazeGame() {
     attackDamage,
     cameraMode,
     controlMode,
+    sealShards,
     checkpoint,
     clues,
     facing,
@@ -306,12 +311,7 @@ export default function MazeGame() {
               : maze.loot.kind === "shield"
                 ? shieldLevel
                 : armorLevel;
-          const maxLevel =
-            maze.loot.kind === "weapon"
-              ? weapons.length - 1
-              : maze.loot.kind === "shield"
-                ? shields.length - 1
-                : armors.length - 1;
+          const maxLevel = 2;
           const item = {
             kind: maze.loot.kind,
             level: Math.min(currentLevel + 1, maxLevel),
@@ -376,6 +376,7 @@ export default function MazeGame() {
 
   const winBattle = (shieldOnly: boolean) => {
     addStat("bosses");
+    setSealShards((value) => value + 12 + Math.floor(bossNumber / 5) * 3);
     if (shieldOnly) unlock("shield_only");
     if (hasLost) unlock("comeback");
     if (bossNumber === TOTAL_LEVELS) {
@@ -456,6 +457,10 @@ export default function MazeGame() {
     if (item.kind === "weapon") setWeaponLevel(item.level);
     else if (item.kind === "shield") setShieldLevel(item.level);
     else setArmorLevel(item.level);
+  };
+  const buyShopItem = (offer: InventoryItem & { price: number }) => {
+    if (sealShards < offer.price || inventory.some((item) => item.kind === offer.kind && item.level === offer.level)) return;
+    sounds.pickup(); setSealShards((value) => value - offer.price); setInventory((items) => [...items, { kind: offer.kind, level: offer.level }]);
   };
   const usePotion = () => {
     if (potions < 1 || mazeHp >= mazeMaxHp) return;
@@ -587,6 +592,7 @@ export default function MazeGame() {
           armorLevel={armorLevel}
           skin={selectedSkin}
           onAction={recordAction}
+          onHeroHealthChange={setMazeHp}
           onWin={winBattle}
           onLose={showGameOver}
         />
@@ -645,14 +651,17 @@ export default function MazeGame() {
         <MainMenu
           canContinue={runStarted}
           accountEmail={accountEmail}
+          sealShards={sealShards}
           onStart={() => (accountEmail ? restart() : setScreen("account"))}
           onContinue={continueGame}
           onAchievements={() => setScreen("achievements")}
+          onShop={() => setScreen("shop")}
           onStats={() => setScreen("statistics")}
           onSound={() => setScreen("sound")}
           onAccount={() => setScreen("account")}
         />
       )}
+      {screen === "shop" && <ShopScreen level={bossNumber} shards={sealShards} inventory={inventory} onBuy={buyShopItem} onClose={() => setScreen("start")} />}
       {screen === "account" && (
         <AccountScreen
           email={accountEmail}
@@ -776,17 +785,18 @@ function pathForScreen(screen: Screen) {
   if (screen === 'achievements') return '/achievements';
   if (screen === 'statistics') return '/statistics';
   if (screen === 'controls') return '/controls';
+  if (screen === 'shop') return '/shop';
   return '/play';
 }
 
 function screenFromPath(hasSave: boolean): Screen {
-  const pages: Record<string, Screen> = { '/settings': 'sound', '/account': 'account', '/achievements': 'achievements', '/statistics': 'statistics', '/controls': 'controls' };
+  const pages: Record<string, Screen> = { '/settings': 'sound', '/account': 'account', '/achievements': 'achievements', '/statistics': 'statistics', '/controls': 'controls', '/shop': 'shop' };
   if (pages[window.location.pathname]) return pages[window.location.pathname];
   if (window.location.pathname === '/play') return hasSave ? 'maze' : 'start';
   return hasSave ? 'maze' : 'start';
 }
 
 function titleForScreen(screen: Screen) {
-  const names: Partial<Record<Screen, string>> = { start: 'Тайны лабиринта', sound: 'Настройки', account: 'Аккаунт', achievements: 'Достижения', statistics: 'Статистика', controls: 'Управление' };
+  const names: Partial<Record<Screen, string>> = { start: 'Тайны лабиринта', sound: 'Настройки', account: 'Аккаунт', achievements: 'Достижения', statistics: 'Статистика', controls: 'Управление', shop: 'Лавка между стен' };
   return `${names[screen] ?? 'Лабиринт'} — Тайны лабиринта`;
 }

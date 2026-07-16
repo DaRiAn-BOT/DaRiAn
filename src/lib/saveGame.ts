@@ -15,6 +15,7 @@ export type SavedProgress = {
   potionFound?: boolean
   potions?: number
   controlMode?: 'computer' | 'phone'
+  sealShards?: number
 }
 
 const SAVE_KEY = 'maze-adventure-progress'

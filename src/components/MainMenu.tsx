@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { TOTAL_LEVELS } from '../lib/gameConfig'
 import { useLanguage } from '../lib/languageSettings'
 
-type Props = { canContinue: boolean; accountEmail: string | null; onStart: () => void; onContinue: () => void; onStats: () => void; onSound: () => void; onAchievements: () => void; onAccount: () => void }
+type Props = { canContinue: boolean; accountEmail: string | null; sealShards: number; onStart: () => void; onContinue: () => void; onShop: () => void; onStats: () => void; onSound: () => void; onAchievements: () => void; onAccount: () => void }
 
 const labels = {
   ru: { eyebrow: 'ТАЙНЫ ЛАБИРИНТА', title: 'Путь ждёт тебя', description: `Ты уснул дома, но во сне провалился в древний лабиринт. Его стражи когда-то защищали людей, пока тёмная корона не подчинила их и короля Малзара. Найди ${TOTAL_LEVELS} частей утраченной памяти, освободи стражей и раскрой правду о своём пробуждении.`, continue: 'Исследовать дальше', explore: 'Исследовать лабиринт', achievements: 'Достижения', stats: 'Статистика', settings: 'Настройки', account: 'Войти / регистрация', accountReady: 'Аккаунт ✓', confirm: 'Начать новое исследование?', warning: 'Текущее сохранение будет удалено. Это действие нельзя отменить.', cancel: 'Отмена', erase: 'Удалить и исследовать' },
@@ -10,7 +10,7 @@ const labels = {
   kk: { eyebrow: 'ЛАБИРИНТ ҚҰПИЯЛАРЫ', title: 'Жол сені күтеді', description: `Сен үйде ұйықтап, түсіңде ежелгі лабиринтке құладың. Оның сақшылары бұрын адамдарды қорғаған, бірақ қараңғы тәж оларды және Малзар патшаны бағындырды. Жоғалған жадтың ${TOTAL_LEVELS} бөлігін тауып, сақшыларды босат және оянуыңның құпиясын аш.`, continue: 'Әрі қарай зерттеу', explore: 'Лабиринтті зерттеу', achievements: 'Жетістіктер', stats: 'Статистика', settings: 'Баптаулар', account: 'Кіру / тіркелу', accountReady: 'Аккаунт ✓', confirm: 'Жаңа зерттеуді бастау керек пе?', warning: 'Ағымдағы сақтау жойылады. Бұл әрекетті қайтару мүмкін емес.', cancel: 'Бас тарту', erase: 'Жою және зерттеу' },
 }
 
-export default function MainMenu({ canContinue, accountEmail, onStart, onContinue, onStats, onSound, onAchievements, onAccount }: Props) {
+export default function MainMenu({ canContinue, accountEmail, sealShards, onStart, onContinue, onShop, onStats, onSound, onAchievements, onAccount }: Props) {
   const [confirmNewGame, setConfirmNewGame] = useState(false)
   const text = labels[useLanguage()]
   const startGame = () => canContinue ? setConfirmNewGame(true) : onStart()
@@ -24,10 +24,12 @@ export default function MainMenu({ canContinue, accountEmail, onStart, onContinu
   }, [confirmNewGame])
   return <div className="story-card main-menu">
     <span>◇</span><p className="eyebrow">{text.eyebrow}</p><h2>{text.title}</h2><p>{text.description}</p>
+    <div className="menu-currency">◈ ЭХО ЛАБИРИНТА: <strong>{sealShards}</strong></div>
     <div className="menu-actions">
       {canContinue && <button onClick={onContinue}>{text.continue}</button>}
       <button className={canContinue ? 'secondary-menu-button' : ''} onClick={startGame}>{text.explore}</button>
       <button className="secondary-menu-button" onClick={onAchievements}>{text.achievements}</button>
+      <button className="secondary-menu-button shop-menu-button" onClick={onShop}>Лавка между стен</button>
       <button className="secondary-menu-button" onClick={onStats}>{text.stats}</button>
       <button className="secondary-menu-button" onClick={onSound}>{text.settings}</button>
       <button className="secondary-menu-button" onClick={onAccount}>{accountEmail ? text.accountReady : text.account}</button>
