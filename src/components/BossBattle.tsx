@@ -4,6 +4,7 @@ import { bossNames } from '../lib/bosses'
 import { sounds } from '../lib/sounds'
 import { TOTAL_LEVELS } from '../lib/gameConfig'
 import HeroModel from './HeroModel'
+import EquipmentIcon from './EquipmentIcon'
 import { bossDialogues } from '../lib/bossDialogues'
 
 type Props = { number: number; attackDamage: number; heroMaxHp: number; weaponLevel: number; shieldLevel: number; armorLevel: number; skin: number; onAction: (action: 'attack' | 'shield') => void; onWin: (shieldOnly: boolean) => void; onLose: () => void }
@@ -132,7 +133,7 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
     <p className="boss-ability">{ability}</p>
     <Health label="Босс" value={bossHp} max={bossMax} danger />
     <Health label="Герой" value={heroHp} max={heroMaxHp} />
-    <p className="equipment-line">⚔ {weapons[weaponLevel].name} · ◆ {shields[shieldLevel].name} · ♟ {armors[armorLevel].name}</p>
+    <div className="equipment-line"><span><EquipmentIcon kind="weapon" level={weaponLevel} small />{weapons[weaponLevel].name}</span><span><EquipmentIcon kind="shield" level={shieldLevel} small />{shields[shieldLevel].name}</span><span><EquipmentIcon kind="armor" level={armorLevel} small />{armors[armorLevel].name}</span></div>
     <p className="battle-message">{message} · Твой урон: {formatNumber(attackDamage)}</p>
     {powerWarning && <div className="power-warning" role="alert">⚠ МОЩНЫЙ УДАР!<small>ИСПОЛЬЗУЙ ЩИТ</small></div>}
     <div className="battle-actions">

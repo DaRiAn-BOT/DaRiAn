@@ -1,4 +1,5 @@
 import { armors, shields, weapons, type EquipmentKind, type InventoryItem } from '../lib/equipment'
+import EquipmentIcon from './EquipmentIcon'
 
 type Props = {
   items: InventoryItem[]
@@ -8,7 +9,6 @@ type Props = {
 }
 
 const catalogs = { weapon: weapons, shield: shields, armor: armors }
-const icons = { weapon: '⚔', shield: '◆', armor: '♟' }
 
 export default function BackpackMenu({ items, equipped, onEquip, onClose }: Props) {
   return <div className="backpack-card">
@@ -19,7 +19,7 @@ export default function BackpackMenu({ items, equipped, onEquip, onClose }: Prop
         const data = catalogs[item.kind][item.level]
         const isEquipped = equipped[item.kind] === item.level
         return <button key={`${item.kind}-${item.level}`} className={isEquipped ? 'equipped' : ''} onClick={() => onEquip(item)}>
-          <span>{icons[item.kind]}</span><div><strong>{data.name}</strong><small>{data.effect}</small></div><b>{isEquipped ? 'НАДЕТО' : 'НАДЕТЬ'}</b>
+          <EquipmentIcon kind={item.kind} level={item.level} /><div><strong>{data.name}</strong><small>{data.effect}</small></div><b>{isEquipped ? 'НАДЕТО' : 'НАДЕТЬ'}</b>
         </button>
       })}
     </div>
