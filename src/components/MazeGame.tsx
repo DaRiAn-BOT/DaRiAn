@@ -282,7 +282,7 @@ export default function MazeGame() {
         setWalkStep((step) => !step);
         if (!potionFound && mazeHp < mazeMaxHp && maze.potion.x === next.x && maze.potion.y === next.y) {
           sounds.pickup();
-          setMazeHp((health) => Math.min(mazeMaxHp, health + 30));
+          setMazeHp((health) => Math.min(mazeMaxHp, health + 50));
           setPotionFound(true);
         }
         if (!lootFound && maze.loot?.x === next.x && maze.loot.y === next.y) {
