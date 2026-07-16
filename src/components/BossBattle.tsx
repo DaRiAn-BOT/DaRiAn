@@ -12,7 +12,7 @@ const formatNumber = (value: number) => Number(value.toFixed(1)).toLocaleString(
 export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLevel, shieldLevel, armorLevel, skin, onAction, onWin, onLose }: Props) {
   const finalBoss = number === TOTAL_LEVELS
   const bossMax = 15 + (number - 1) * 2.2 + (finalBoss ? 8 : 0)
-  const fullBossDamage = 6 + (number - 1) * .35 + (finalBoss ? 1 : 0)
+  const fullBossDamage = 6 + (number - 1) * .35 + (finalBoss ? -.7 : 0)
   const [bossHp, setBossHp] = useState(bossMax)
   const [heroHp, setHeroHp] = useState(heroMaxHp)
   const [message, setMessage] = useState('Босс готовится атаковать первым!')
@@ -22,6 +22,7 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
   const [combatStarted, setCombatStarted] = useState(false)
   const [attackAnimation, setAttackAnimation] = useState(false)
   const [bossHitAnimation, setBossHitAnimation] = useState(false)
+  const [powerWarning, setPowerWarning] = useState(false)
   const powerAttackReady = useRef(false)
   const usedAttack = useRef(false)
   const powerAttackChance = finalBoss ? .45 : .35
@@ -32,6 +33,7 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
     const timer = window.setTimeout(() => {
       const healthAfterHit = Math.max(0, heroMaxHp - fullBossDamage)
       powerAttackReady.current = Math.random() < powerAttackChance
+      setPowerWarning(powerAttackReady.current)
       setHeroHp(healthAfterHit)
       setMessage(`Босс атаковал первым и нанёс ${formatNumber(fullBossDamage)} урона.${powerAttackReady.current ? ' Он готовит мощный удар — используй щит!' : ' Твой ход!'}`)
       if (!healthAfterHit) window.setTimeout(onLose, 650)
@@ -61,6 +63,7 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
     if (busy) return
     setBusy(true)
     const isPowerAttack = powerAttackReady.current
+    setPowerWarning(false)
     onAction(defending ? 'shield' : 'attack')
     if (defending) sounds.shield(); else {
       sounds.attack(); usedAttack.current = true
@@ -87,6 +90,7 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
       sounds.hit()
       setHeroHp(nextHeroHp)
       powerAttackReady.current = Math.random() < powerAttackChance
+      setPowerWarning(powerAttackReady.current)
       const warning = powerAttackReady.current ? ' Босс готовит мощный удар — используй щит!' : ''
       const result = defending
         ? `Щит выдержал! Получено ${formatNumber(bossDamage)} урона.`
@@ -130,9 +134,10 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
     <Health label="Герой" value={heroHp} max={heroMaxHp} />
     <p className="equipment-line">⚔ {weapons[weaponLevel].name} · ◆ {shields[shieldLevel].name} · ♟ {armors[armorLevel].name}</p>
     <p className="battle-message">{message} · Твой урон: {formatNumber(attackDamage)}</p>
+    {powerWarning && <div className="power-warning" role="alert">⚠ МОЩНЫЙ УДАР!<small>ИСПОЛЬЗУЙ ЩИТ</small></div>}
     <div className="battle-actions">
-      <button disabled={busy} onClick={() => turn(false)}>⚔ Атаковать · ПРОБЕЛ</button>
-      <button disabled={busy} className="secondary" onClick={() => turn(true)}>◈ Щит · R / К</button>
+      <button disabled={busy} className="battle-attack" onClick={() => turn(false)}>⚔ <span>Атаковать</span><small>ПРОБЕЛ</small></button>
+      <button disabled={busy} className="secondary battle-shield" onClick={() => turn(true)}>◈ <span>Щит</span><small>R / К</small></button>
     </div>
   </div>
 }
