@@ -7,15 +7,15 @@ import HeroModel from './HeroModel'
 import EquipmentIcon from './EquipmentIcon'
 import { bossDialogues } from '../lib/bossDialogues'
 
-type Props = { number: number; attackDamage: number; heroMaxHp: number; weaponLevel: number; shieldLevel: number; armorLevel: number; skin: number; onAction: (action: 'attack' | 'shield') => void; onWin: (shieldOnly: boolean) => void; onLose: () => void }
+type Props = { number: number; attackDamage: number; heroStartHp: number; heroMaxHp: number; weaponLevel: number; shieldLevel: number; armorLevel: number; skin: number; onAction: (action: 'attack' | 'shield') => void; onWin: (shieldOnly: boolean) => void; onLose: () => void }
 const formatNumber = (value: number) => Number(value.toFixed(1)).toLocaleString('ru-RU')
 
-export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLevel, shieldLevel, armorLevel, skin, onAction, onWin, onLose }: Props) {
+export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxHp, weaponLevel, shieldLevel, armorLevel, skin, onAction, onWin, onLose }: Props) {
   const finalBoss = number === TOTAL_LEVELS
   const bossMax = 15 + (number - 1) * 2.2 + (finalBoss ? 8 : 0)
   const fullBossDamage = 6 + (number - 1) * .35 + (finalBoss ? -.7 : 0)
   const [bossHp, setBossHp] = useState(bossMax)
-  const [heroHp, setHeroHp] = useState(heroMaxHp)
+  const [heroHp, setHeroHp] = useState(Math.min(heroStartHp, heroMaxHp))
   const [message, setMessage] = useState('Босс готовится атаковать первым!')
   const [busy, setBusy] = useState(true)
   const [winning, setWinning] = useState(false)
@@ -32,7 +32,7 @@ export default function BossBattle({ number, attackDamage, heroMaxHp, weaponLeve
   useEffect(() => {
     if (!combatStarted) return
     const timer = window.setTimeout(() => {
-      const healthAfterHit = Math.max(0, heroMaxHp - fullBossDamage)
+      const healthAfterHit = Math.max(0, Math.min(heroStartHp, heroMaxHp) - fullBossDamage)
       powerAttackReady.current = Math.random() < powerAttackChance
       setPowerWarning(powerAttackReady.current)
       setHeroHp(healthAfterHit)

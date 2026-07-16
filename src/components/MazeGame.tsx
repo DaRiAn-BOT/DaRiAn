@@ -282,7 +282,7 @@ export default function MazeGame() {
         setWalkStep((step) => !step);
         if (!potionFound && mazeHp < mazeMaxHp && maze.potion.x === next.x && maze.potion.y === next.y) {
           sounds.pickup();
-          setMazeHp((health) => Math.min(mazeMaxHp, health + 15));
+          setMazeHp((health) => Math.min(mazeMaxHp, health + 30));
           setPotionFound(true);
         }
         if (!lootFound && maze.loot?.x === next.x && maze.loot.y === next.y) {
@@ -535,6 +535,7 @@ export default function MazeGame() {
           key={bossNumber}
           number={bossNumber}
           attackDamage={attackDamage}
+          heroStartHp={mazeHp}
           heroMaxHp={100 + clues * 2.5}
           weaponLevel={weaponLevel}
           shieldLevel={shieldLevel}
