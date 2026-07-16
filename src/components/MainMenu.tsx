@@ -29,7 +29,7 @@ export default function MainMenu({ canContinue, accountEmail, sealShards, onStar
       {canContinue && <button onClick={onContinue}>{text.continue}</button>}
       <button className={canContinue ? 'secondary-menu-button' : ''} onClick={startGame}>{text.explore}</button>
       <button className="secondary-menu-button" onClick={onAchievements}>{text.achievements}</button>
-      <button className="secondary-menu-button shop-menu-button" onClick={onShop}>Лавка между стен</button>
+      <button className="secondary-menu-button shop-menu-button" onClick={onShop}>Арсенал Лабиринта</button>
       <button className="secondary-menu-button" onClick={onStats}>{text.stats}</button>
       <button className="secondary-menu-button" onClick={onSound}>{text.settings}</button>
       <button className="secondary-menu-button" onClick={onAccount}>{accountEmail ? text.accountReady : text.account}</button>

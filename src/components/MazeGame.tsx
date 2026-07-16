@@ -479,6 +479,10 @@ export default function MazeGame() {
     if (sealShards < offer.price || inventory.some((item) => item.kind === offer.kind && item.level === offer.level)) return;
     sounds.pickup(); setSealShards((value) => value - offer.price); setInventory((items) => [...items, { kind: offer.kind, level: offer.level }]);
   };
+  const buyHealingPotion = () => {
+    if (sealShards < 215) return;
+    sounds.pickup(); setSealShards((value) => value - 215); setPotions((count) => count + 1);
+  };
   const usePotion = () => {
     if (potions < 1 || mazeHp >= mazeMaxHp) return;
     sounds.pickup();
@@ -678,7 +682,7 @@ export default function MazeGame() {
           onAccount={() => setScreen("account")}
         />
       )}
-      {screen === "shop" && <ShopScreen level={bossNumber} shards={sealShards} inventory={inventory} onBuy={buyShopItem} onClose={() => setScreen("start")} />}
+      {screen === "shop" && <ShopScreen level={bossNumber} shards={sealShards} inventory={inventory} potions={potions} onBuy={buyShopItem} onBuyPotion={buyHealingPotion} onClose={() => setScreen("start")} />}
       {screen === "account" && (
         <AccountScreen
           email={accountEmail}
@@ -815,6 +819,6 @@ function screenFromPath(hasSave: boolean): Screen {
 }
 
 function titleForScreen(screen: Screen) {
-  const names: Partial<Record<Screen, string>> = { start: 'Тайны лабиринта', sound: 'Настройки', account: 'Аккаунт', achievements: 'Достижения', statistics: 'Статистика', controls: 'Управление', shop: 'Лавка между стен' };
+  const names: Partial<Record<Screen, string>> = { start: 'Тайны лабиринта', sound: 'Настройки', account: 'Аккаунт', achievements: 'Достижения', statistics: 'Статистика', controls: 'Управление', shop: 'Арсенал Лабиринта' };
   return `${names[screen] ?? 'Лабиринт'} — Тайны лабиринта`;
 }
