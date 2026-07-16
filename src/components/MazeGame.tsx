@@ -100,6 +100,7 @@ export default function MazeGame() {
   const [screen, setScreen] = useState<Screen>(
     () => screenFromPath(saved?.active ?? false),
   );
+  const [battleBackpackOpen, setBattleBackpackOpen] = useState(false);
   const [runStarted, setRunStarted] = useState(saved?.active ?? false);
   const [hasLost, setHasLost] = useState(saved?.hasLost ?? false);
   const [stats, setStats] = useState<GameStats>(saved?.stats ?? emptyStats);
@@ -450,6 +451,17 @@ export default function MazeGame() {
   };
 
   useEffect(() => {
+    if (screen !== "battle") return;
+    const toggleBattleBackpack = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      if (key !== "e" && key !== "у") return;
+      event.preventDefault(); sounds.menu(); setBattleBackpackOpen((open) => !open);
+    };
+    window.addEventListener("keydown", toggleBattleBackpack);
+    return () => window.removeEventListener("keydown", toggleBattleBackpack);
+  }, [screen]);
+
+  useEffect(() => {
     if (screen !== "clue") return;
     const enterBattle = (event: KeyboardEvent) => { if (event.code === "Enter") { event.preventDefault(); setScreen("battle"); } };
     window.addEventListener("keydown", enterBattle);
@@ -461,6 +473,7 @@ export default function MazeGame() {
       if (event.code !== "Escape" || screen === "start") return;
       event.preventDefault();
       sounds.menu();
+      if (battleBackpackOpen) { setBattleBackpackOpen(false); return; }
       if (screen === "backpack") {
         setScreen("maze");
         return;
@@ -471,7 +484,7 @@ export default function MazeGame() {
     };
     window.addEventListener("keydown", closeWithEscape);
     return () => window.removeEventListener("keydown", closeWithEscape);
-  }, [checkpoint, screen]);
+  }, [battleBackpackOpen, checkpoint, screen]);
 
   return (
     <section className={`game-shell ${controlMode === "phone" ? "phone-controls" : "computer-controls"} ${fullscreenActive && controlMode === 'computer' ? 'hide-cursor' : ''}`}>
@@ -548,7 +561,7 @@ export default function MazeGame() {
         </>
       )}
       {screen === "battle" && (
-        <BossBattle
+        <><BossBattle
           key={bossNumber}
           number={bossNumber}
           attackDamage={attackDamage}
@@ -562,6 +575,9 @@ export default function MazeGame() {
           onWin={winBattle}
           onLose={showGameOver}
         />
+        <button className="battle-backpack-button" onClick={() => setBattleBackpackOpen(true)}>РЮКЗАК · E / У</button>
+        {battleBackpackOpen && <div className="battle-backpack-overlay"><BackpackMenu items={inventory} potions={potions} health={mazeHp} maxHealth={mazeMaxHp} equipped={{ weapon: weaponLevel, shield: shieldLevel, armor: armorLevel }} onEquip={equip} onUsePotion={usePotion} onClose={() => setBattleBackpackOpen(false)} /></div>}
+        </>
       )}
       {screen === "clue" && (
         <Overlay

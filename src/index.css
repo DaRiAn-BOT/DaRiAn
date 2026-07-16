@@ -1,4 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+.battle-backpack-overlay .item-list button { min-height: 64px; touch-action: manipulation; }
+@media (orientation: landscape) and (max-height: 600px) {
+  .phone-controls .battle-actions { flex-wrap: wrap; }
+  .phone-controls .battle-backpack-button { position: fixed; z-index: 88; left: 28px; top: 16px; width: 120px; margin: 0; }
+  .phone-controls .battle-backpack-overlay { padding: 8px; }
+  .phone-controls .battle-backpack-overlay .backpack-card { width: calc(100vw - 18px); max-height: calc(100vh - 16px); padding: 12px; }
+  .phone-controls .clue-overlay button { position: sticky; bottom: 4px; min-width: 210px; min-height: 58px; }
+}
+@media (orientation: portrait) and (max-width: 700px) {
+  .phone-controls .battle-actions { flex-wrap: wrap; max-width: 356px; }
+  .phone-controls .battle-backpack-button { position: absolute; z-index: 88; left: 12px; top: 12px; width: 112px; margin: 0; }
+  .phone-controls .battle-backpack-overlay { padding: 6px; }
+  .phone-controls .battle-backpack-overlay .backpack-card { width: calc(100vh - 12px); max-height: calc(100vw - 12px); padding: 10px; }
+  .phone-controls .clue-overlay button { position: sticky; bottom: 4px; min-width: 210px; min-height: 58px; }
+}
+.battle-backpack-button { display: block; margin: 12px auto 0; }.battle-backpack-overlay { position: fixed; z-index: 120; inset: 0; display: grid; place-items: center; padding: 18px; overflow: auto; background: #020403eF; }.battle-backpack-overlay .backpack-card { width: min(94vw, 920px); max-height: 94vh; overflow: auto; }
 .item-list button { grid-template-columns: 28px 44px minmax(0, 1fr) auto !important; }
 .item-list button > .backpack-potion { justify-self: center; flex: none; width: 28px !important; min-width: 28px; height: 34px !important; margin: 5px 7px 0; border-width: 2px; border-radius: 2px 2px 7px 7px; animation: none; color: transparent !important; font-size: 0 !important; }
 .item-list button > .backpack-potion::before { left: 5px; top: -10px; width: 14px; height: 9px; border: 2px solid #d7eee0; background: linear-gradient(#7b5332 0 55%, #3e281a 56%); }
