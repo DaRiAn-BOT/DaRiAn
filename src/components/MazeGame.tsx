@@ -225,7 +225,11 @@ export default function MazeGame() {
   useEffect(() => {
     if (screen !== "maze" || !monsters.length) return;
     const moveTimer = window.setInterval(() => {
-      setMonsters((current) => chasePlayer(current, playerRef.current, maze.cells));
+      setMonsters((current) => {
+        const moved = chasePlayer(current, playerRef.current, maze.cells);
+        monstersRef.current = moved;
+        return moved;
+      });
     }, controlMode === "phone" ? 900 : 500);
     return () => window.clearInterval(moveTimer);
   }, [controlMode, maze.cells, monsters.length, screen]);
@@ -236,6 +240,7 @@ export default function MazeGame() {
       const currentPlayer = playerRef.current;
       const attackers = monstersRef.current.filter(
         (enemy) =>
+          enemy.hp > 0 &&
           Math.abs(enemy.x - currentPlayer.x) + Math.abs(enemy.y - currentPlayer.y) === 1,
       ).length;
       if (!attackers) return;
@@ -243,8 +248,11 @@ export default function MazeGame() {
       setMazeHp((health) => {
         const healthAfterHit = Math.max(0, health - attackers * MINI_MONSTER_DAMAGE);
         if (healthAfterHit > 0) return healthAfterHit;
+        playerRef.current = checkpoint;
         setPlayer(checkpoint);
-        setMonsters(createMiniMonsters(maze, clues + 1));
+        const respawned = createMiniMonsters(maze, clues + 1);
+        monstersRef.current = respawned;
+        setMonsters(respawned);
         return mazeMaxHp;
       });
     }, 300);
@@ -325,6 +333,7 @@ export default function MazeGame() {
           setCheckpoint(current);
           setScreen("clue");
         }
+        playerRef.current = next;
         return next;
       });
     },
@@ -349,13 +358,18 @@ export default function MazeGame() {
     sounds.attack();
     setMazeAttacking(true);
     window.setTimeout(() => setMazeAttacking(false), 420);
-    const target = monsters.find((enemy) => Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1);
+    const currentPlayer = playerRef.current;
+    const target = monstersRef.current.find((enemy) => enemy.hp > 0 && Math.abs(enemy.x - currentPlayer.x) + Math.abs(enemy.y - currentPlayer.y) === 1);
     if (!target) return;
     setHitMonsterId(target.id);
     window.setTimeout(() => setHitMonsterId(null), 420);
     addStat("attacks");
     const damage = attackDamage + weaponLevel * 0.5;
-    setMonsters((enemies) => enemies.flatMap((enemy) => enemy.id !== target.id ? [enemy] : enemy.hp <= damage ? [] : [{ ...enemy, hp: Math.round((enemy.hp - damage) * 10) / 10 }]));
+    setMonsters((enemies) => {
+      const damaged = enemies.flatMap((enemy) => enemy.id !== target.id ? [enemy] : enemy.hp <= damage ? [] : [{ ...enemy, hp: Math.round((enemy.hp - damage) * 10) / 10 }]);
+      monstersRef.current = damaged;
+      return damaged;
+    });
   }, [addStat, attackDamage, monsters, player, screen, weaponLevel]);
 
   useMazeControls({ screen, move, attack: attackMonster, setScreen, setCameraMode });
