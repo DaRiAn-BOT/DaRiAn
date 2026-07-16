@@ -546,6 +546,7 @@ export default function MazeGame() {
             сохранён · Страж {bossNumber}
           </div>
           <MazeBoard
+            level={bossNumber}
             maze={maze}
             player={player}
             playerName={accountNickname ?? (accountEmail ? "Игрок" : "Гость")}

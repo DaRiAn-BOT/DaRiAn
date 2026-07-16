@@ -3,21 +3,23 @@ import HeroModel from './HeroModel'
 import type { MiniMonster } from '../lib/miniMonsters'
 
 type Facing = 'up' | 'down' | 'left' | 'right'
-type Props = { maze: Maze; player: Point; playerName: string; playerHp: number; playerMaxHp: number; checkpoint: Point; monsters: MiniMonster[]; cameraMode: 2 | 3; lootFound: boolean; potionFound: boolean; skin: number; facing: Facing; walkStep: boolean; attackAnimation: boolean; hitMonsterId: number | null; onMove: (dx: number, dy: number) => void }
+type Props = { level: number; maze: Maze; player: Point; playerName: string; playerHp: number; playerMaxHp: number; checkpoint: Point; monsters: MiniMonster[]; cameraMode: 2 | 3; lootFound: boolean; potionFound: boolean; skin: number; facing: Facing; walkStep: boolean; attackAnimation: boolean; hitMonsterId: number | null; onMove: (dx: number, dy: number) => void }
 const controls = [
   { label: '↑', dx: 0, dy: -1, className: 'up' }, { label: '←', dx: -1, dy: 0, className: 'left' },
   { label: '↓', dx: 0, dy: 1, className: 'down' }, { label: '→', dx: 1, dy: 0, className: 'right' },
 ]
 const CELL_SIZE = 36
 
-export default function MazeBoard({ maze, player, playerName, playerHp, playerMaxHp, checkpoint, monsters, cameraMode, lootFound, potionFound, skin, facing, walkStep, attackAnimation, hitMonsterId, onMove }: Props) {
+export default function MazeBoard({ level, maze, player, playerName, playerHp, playerMaxHp, checkpoint, monsters, cameraMode, lootFound, potionFound, skin, facing, walkStep, attackAnimation, hitMonsterId, onMove }: Props) {
+  const location = level < 10 ? 'ancient' : level < 20 ? 'magic' : 'guardian'
   const cameraScale = cameraMode === 2 ? 2.15 : 1.15
   const playerOffset = `translate(-${(player.x + .5) * CELL_SIZE}px, -${(player.y + .5) * CELL_SIZE}px)`
   const cameraTransform = cameraMode === 2
     ? `rotateX(57deg) scale(${cameraScale}) ${playerOffset}`
     : `rotateX(32deg) scale(${cameraScale}) ${playerOffset}`
   return <>
-    <div className={`maze-camera camera-${cameraMode}`}>
+    <div className={`maze-camera camera-${cameraMode} location-${location}`}>
+      <div className="location-name">{location === 'ancient' ? 'ДРЕВНИЙ ЛАБИРИНТ' : location === 'magic' ? 'МАГИЧЕСКИЕ ЗАЛЫ' : 'КРЕПОСТЬ СТРАЖЕЙ'}</div>
       <div className="maze-player-name">♙ {playerName}</div>
       <div className="maze-health"><span>HP</span><b>{Math.ceil(playerHp)} / {Math.ceil(playerMaxHp)}</b><i><em style={{ width: `${playerHp / playerMaxHp * 100}%` }} /></i></div>
       <div className="maze-world" style={{
