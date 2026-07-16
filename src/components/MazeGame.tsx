@@ -31,6 +31,7 @@ import OpeningCutscene from "./OpeningCutscene";
 import SkinSelection from "./SkinSelection";
 import DeviceSelection from "./DeviceSelection";
 import ShopScreen from "./ShopScreen";
+import { claimDailyEcho } from "../lib/dailyReward";
 import { loadNickname, NICKNAME_EVENT } from "../lib/playerProfile";
 import {
   chasePlayer,
@@ -73,6 +74,7 @@ export default function MazeGame() {
   const [potionFound, setPotionFound] = useState(saved?.potionFound ?? false);
   const [potions, setPotions] = useState(saved?.potions ?? 0);
   const [sealShards, setSealShards] = useState(saved?.sealShards ?? 0);
+  const [dailyReward, setDailyReward] = useState(0);
   const [selectedSkin, setSelectedSkin] = useState(saved?.selectedSkin ?? 0);
   const [controlMode, setControlMode] = useState<'computer' | 'phone'>(saved?.controlMode ?? 'computer');
   const [fullscreenActive, setFullscreenActive] = useState(false);
@@ -126,6 +128,14 @@ export default function MazeGame() {
   }, []);
 
   useEffect(() => saveLifetimeStats(lifetimeStats), [lifetimeStats]);
+  useEffect(() => {
+    const reward = claimDailyEcho();
+    if (!reward) return;
+    setSealShards((value) => value + reward);
+    setDailyReward(reward);
+    const timer = window.setTimeout(() => setDailyReward(0), 4500);
+    return () => window.clearTimeout(timer);
+  }, []);
   useEffect(() => { monstersRef.current = monsters; }, [monsters]);
   useEffect(() => { playerRef.current = player; }, [player]);
   useEffect(() => {
@@ -383,7 +393,7 @@ export default function MazeGame() {
 
   const winBattle = (shieldOnly: boolean) => {
     addStat("bosses");
-    setSealShards((value) => value + 12 + Math.floor(bossNumber / 5) * 3);
+    setSealShards((value) => value + 7);
     if (shieldOnly) unlock("shield_only");
     if (hasLost) unlock("comeback");
     if (bossNumber === TOTAL_LEVELS) {
@@ -710,6 +720,7 @@ export default function MazeGame() {
         <SkinSelection selectedSkin={selectedSkin} onSelect={setSelectedSkin} onConfirm={() => setScreen("intro")} />
       )}
       {notification && <AchievementToast achievement={notification} />}
+      {dailyReward > 0 && <div className="daily-reward-toast" role="status"><i>◈</i><span><small>ЕЖЕДНЕВНАЯ НАГРАДА</small><strong>+{dailyReward} Эха Лабиринта</strong></span></div>}
       {screen === "lost" && (
         <GameOver
           bossNumber={bossNumber}
