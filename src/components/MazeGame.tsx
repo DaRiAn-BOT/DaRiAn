@@ -241,17 +241,24 @@ export default function MazeGame() {
 
   useEffect(() => {
     if (screen !== "maze" || !monsters.length) return;
-    const timer = window.setInterval(() => {
+    const attackers = monsters.filter(
+      (enemy) => enemy.hp > 0 && Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1,
+    ).length;
+    if (!attackers) return;
+    const attackerSnapshot = monsters
+      .filter((enemy) => enemy.hp > 0 && Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1)
+      .map((enemy) => `${enemy.id}:${enemy.x}:${enemy.y}`)
+      .join('|');
+    const timer = window.setTimeout(() => {
       const currentPlayer = playerRef.current;
-      const attackers = monstersRef.current.filter(
-        (enemy) =>
-          enemy.hp > 0 &&
-          Math.abs(enemy.x - currentPlayer.x) + Math.abs(enemy.y - currentPlayer.y) === 1,
-      ).length;
-      if (!attackers) return;
+      const currentAttackers = monstersRef.current.filter(
+        (enemy) => enemy.hp > 0 && Math.abs(enemy.x - currentPlayer.x) + Math.abs(enemy.y - currentPlayer.y) === 1,
+      );
+      const currentSnapshot = currentAttackers.map((enemy) => `${enemy.id}:${enemy.x}:${enemy.y}`).join('|');
+      if (!currentAttackers.length || currentSnapshot !== attackerSnapshot) return;
       sounds.hit();
       setMazeHp((health) => {
-        const healthAfterHit = Math.max(0, health - attackers * MINI_MONSTER_DAMAGE);
+        const healthAfterHit = Math.max(0, health - currentAttackers.length * MINI_MONSTER_DAMAGE);
         if (healthAfterHit > 0) return healthAfterHit;
         playerRef.current = checkpoint;
         setPlayer(checkpoint);
@@ -261,8 +268,8 @@ export default function MazeGame() {
         return mazeMaxHp;
       });
     }, 300);
-    return () => window.clearInterval(timer);
-  }, [checkpoint, clues, maze, mazeMaxHp, monsters.length, screen]);
+    return () => window.clearTimeout(timer);
+  }, [checkpoint, clues, maze, mazeHp, mazeMaxHp, monsters, player, screen]);
 
   useEffect(() => {
     if (!saved?.active) return;
