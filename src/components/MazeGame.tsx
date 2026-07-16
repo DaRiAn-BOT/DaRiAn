@@ -210,7 +210,7 @@ export default function MazeGame() {
       setMazeHp(mazeMaxHp);
       setPlayer(checkpoint);
       setMonsters(createMiniMonsters(maze, clues + 1));
-    }, 500);
+    }, 300);
     return () => window.clearInterval(timer);
   }, [checkpoint, clues, maze, mazeHp, mazeMaxHp, monsters, player, screen]);
 
