@@ -62,6 +62,11 @@ html:-webkit-full-screen, html:-webkit-full-screen *, body:-webkit-full-screen, 
   .phone-controls .fog { transition: none; }
   .phone-controls .maze-camera { box-shadow: 0 8px 20px #000, inset 0 0 18px #000; }
   .phone-controls .wall, .phone-controls .path { box-shadow: inset 2px 2px 2px #ffffff12, inset -2px -2px 3px #000b; }
+  .phone-controls .location-name { top: 5px; padding: 4px 7px; font-size: 7px; }
+  .phone-controls .location-magic { border-color: #7458a8; background: #090611; box-shadow: 0 6px 16px #000, inset 0 0 14px #120b22; }
+  .phone-controls .location-guardian { border-color: #8d633a; background: #0c0805; box-shadow: 0 6px 16px #000, inset 0 0 14px #26160b; }
+  .phone-controls .location-magic .wall { background: linear-gradient(135deg, #59477b 0 18%, #2c2046 19% 66%, #0b0713 67%); }
+  .phone-controls .location-guardian .wall { background: repeating-linear-gradient(135deg, #594433 0 12px, #2e2118 13px 25px, #100b08 26px 29px); }
 }
 @media (orientation: portrait) and (max-width: 700px) {
   body .game-shell.phone-controls { position: fixed; z-index: 30; left: 50%; top: 50%; width: 100vh; height: 100vw; max-width: none; padding: 4px 104px; overflow: auto; transform: translate(-50%, -50%) rotate(90deg); transform-origin: center; background: #050806; }
@@ -80,6 +85,11 @@ html:-webkit-full-screen, html:-webkit-full-screen *, body:-webkit-full-screen, 
   .phone-controls .fog { transition: none; }
   .phone-controls .maze-camera { box-shadow: 0 8px 20px #000, inset 0 0 18px #000; }
   .phone-controls .wall, .phone-controls .path { box-shadow: inset 2px 2px 2px #ffffff12, inset -2px -2px 3px #000b; }
+  .phone-controls .location-name { top: 5px; padding: 4px 7px; font-size: 7px; }
+  .phone-controls .location-magic { border-color: #7458a8; background: #090611; box-shadow: 0 6px 16px #000, inset 0 0 14px #120b22; }
+  .phone-controls .location-guardian { border-color: #8d633a; background: #0c0805; box-shadow: 0 6px 16px #000, inset 0 0 14px #26160b; }
+  .phone-controls .location-magic .wall { background: linear-gradient(135deg, #59477b 0 18%, #2c2046 19% 66%, #0b0713 67%); }
+  .phone-controls .location-guardian .wall { background: repeating-linear-gradient(135deg, #594433 0 12px, #2e2118 13px 25px, #100b08 26px 29px); }
 }
 @media (max-width: 520px) { .device-options { grid-template-columns: 1fr; }.device-options button { min-height: 105px; } }
 /* Единый пиксельный стиль игры */
