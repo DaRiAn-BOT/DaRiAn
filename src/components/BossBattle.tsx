@@ -24,6 +24,7 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
   const [attackAnimation, setAttackAnimation] = useState(false)
   const [bossHitAnimation, setBossHitAnimation] = useState(false)
   const [powerWarning, setPowerWarning] = useState(false)
+  const [superUsed, setSuperUsed] = useState(false)
   const powerAttackReady = useRef(false)
   const usedAttack = useRef(false)
   const powerAttackChance = finalBoss ? .45 : .35
@@ -60,12 +61,16 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     return () => window.removeEventListener('keydown', continueWithEnter)
   }, [combatStarted, dialogueStep])
 
-  const turn = (defending: boolean) => {
+  const turn = (action: 'attack' | 'shield' | 'super') => {
     if (busy) return
+    const defending = action === 'shield'
+    const superAttack = action === 'super'
+    if (superAttack && (number % 10 !== 0 || superUsed)) return
     setBusy(true)
     const isPowerAttack = powerAttackReady.current
     setPowerWarning(false)
     onAction(defending ? 'shield' : 'attack')
+    if (superAttack) setSuperUsed(true)
     if (defending) sounds.shield(); else {
       sounds.attack(); usedAttack.current = true
       setAttackAnimation(true); setBossHitAnimation(true)
@@ -74,7 +79,7 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     const weaponBonus = weaponLevel >= 1 ? .5 : 0
     const fireBonus = weaponLevel >= 2 ? 1 : 0
     const skinReduction = !defending && !finalBoss && (number - 1) % 4 === 0 ? .5 : 0
-    const damage = defending ? .5 + shieldLevel * .5 : Math.max(.5, attackDamage + weaponBonus + fireBonus - skinReduction)
+    const damage = defending ? .5 + shieldLevel * .5 : Math.max(.5, attackDamage + weaponBonus + fireBonus - skinReduction + (superAttack ? 2.5 : 0))
     const nextBossHp = Math.max(0, bossHp - damage)
     setBossHp(nextBossHp)
     if (!nextBossHp) { setMessage('Победа!'); setWinning(true); sounds.victory(); window.setTimeout(() => onWin(!usedAttack.current), 1500); return }
@@ -95,7 +100,7 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
       const warning = powerAttackReady.current ? ' Босс готовит мощный удар — используй щит!' : ''
       const result = defending
         ? `Щит выдержал! Получено ${formatNumber(bossDamage)} урона.`
-        : `${isPowerAttack ? 'Мощный удар! ' : ''}Ты атаковал на ${formatNumber(damage)}. Босс ответил на ${formatNumber(bossDamage)}.`
+        : `${superAttack ? 'Суперудар! ' : isPowerAttack ? 'Мощный удар! ' : ''}Ты атаковал на ${formatNumber(damage)}. Босс ответил на ${formatNumber(bossDamage)}.`
       setMessage(result + warning)
       if (!nextHeroHp) window.setTimeout(onLose, 650)
       else setBusy(false)
@@ -107,7 +112,7 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     const battleHotkeys = (event: KeyboardEvent) => {
       if (event.code !== 'Space' && event.code !== 'KeyR') return
       event.preventDefault()
-      if (!busy) turn(event.code === 'KeyR')
+      if (!busy) turn(event.code === 'KeyR' ? 'shield' : 'attack')
     }
     window.addEventListener('keydown', battleHotkeys)
     return () => window.removeEventListener('keydown', battleHotkeys)
@@ -137,8 +142,9 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     <p className="battle-message">{message} · Твой урон: {formatNumber(attackDamage)}</p>
     {powerWarning && <div className="power-warning" role="alert">⚠ МОЩНЫЙ УДАР!<small>ИСПОЛЬЗУЙ ЩИТ</small></div>}
     <div className="battle-actions">
-      <button disabled={busy} className="battle-attack" onClick={() => turn(false)}>⚔ <span>Атаковать</span><small>ПРОБЕЛ</small></button>
-      <button disabled={busy} className="secondary battle-shield" onClick={() => turn(true)}>◈ <span>Щит</span><small>R / К</small></button>
+      <button disabled={busy} className="battle-attack" onClick={() => turn('attack')}>⚔ <span>Атаковать</span><small>ПРОБЕЛ</small></button>
+      <button disabled={busy} className="secondary battle-shield" onClick={() => turn('shield')}>◈ <span>Щит</span><small>R / К</small></button>
+      {number % 10 === 0 && <button disabled={busy || superUsed} className="super-attack" onClick={() => turn('super')}>✦ <span>{superUsed ? 'Использовано' : 'Суперудар'}</span><small>+2,5 УРОНА</small></button>}
     </div>
   </div>
 }

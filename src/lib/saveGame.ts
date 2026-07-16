@@ -13,6 +13,7 @@ export type SavedProgress = {
   monsters?: MiniMonster[]
   mazeHp?: number
   potionFound?: boolean
+  potions?: number
   controlMode?: 'computer' | 'phone'
 }
 

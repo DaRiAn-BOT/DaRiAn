@@ -69,6 +69,7 @@ export default function MazeGame() {
   const [armorLevel, setArmorLevel] = useState(saved?.armorLevel ?? 0);
   const [lootFound, setLootFound] = useState(saved?.lootFound ?? false);
   const [potionFound, setPotionFound] = useState(saved?.potionFound ?? false);
+  const [potions, setPotions] = useState(saved?.potions ?? 0);
   const [selectedSkin, setSelectedSkin] = useState(saved?.selectedSkin ?? 0);
   const [controlMode, setControlMode] = useState<'computer' | 'phone'>(saved?.controlMode ?? 'computer');
   const [fullscreenActive, setFullscreenActive] = useState(false);
@@ -186,6 +187,7 @@ export default function MazeGame() {
       monsters,
       mazeHp,
       potionFound,
+      potions,
       controlMode,
     });
   }, [
@@ -204,6 +206,7 @@ export default function MazeGame() {
     monsters,
     player,
     potionFound,
+    potions,
     runStarted,
     screen,
     selectedSkin,
@@ -280,9 +283,9 @@ export default function MazeGame() {
         sounds.step();
         addStat("steps");
         setWalkStep((step) => !step);
-        if (!potionFound && mazeHp < mazeMaxHp && maze.potion.x === next.x && maze.potion.y === next.y) {
+        if (!potionFound && maze.potion.x === next.x && maze.potion.y === next.y) {
           sounds.pickup();
-          setMazeHp((health) => Math.min(mazeMaxHp, health + 50));
+          setPotions((count) => count + 1);
           setPotionFound(true);
         }
         if (!lootFound && maze.loot?.x === next.x && maze.loot.y === next.y) {
@@ -406,6 +409,7 @@ export default function MazeGame() {
     ]);
     setLootFound(false);
     setPotionFound(false);
+    setPotions(0);
     setMazeHp(100);
     setMonsters(createMiniMonsters(first, 1));
     setPlayer(first.start);
@@ -438,6 +442,19 @@ export default function MazeGame() {
     else if (item.kind === "shield") setShieldLevel(item.level);
     else setArmorLevel(item.level);
   };
+  const usePotion = () => {
+    if (potions < 1 || mazeHp >= mazeMaxHp) return;
+    sounds.pickup();
+    setPotions((count) => count - 1);
+    setMazeHp((health) => Math.min(mazeMaxHp, health + 50));
+  };
+
+  useEffect(() => {
+    if (screen !== "clue") return;
+    const enterBattle = (event: KeyboardEvent) => { if (event.code === "Enter") { event.preventDefault(); setScreen("battle"); } };
+    window.addEventListener("keydown", enterBattle);
+    return () => window.removeEventListener("keydown", enterBattle);
+  }, [screen]);
 
   useEffect(() => {
     const closeWithEscape = (event: KeyboardEvent) => {
@@ -580,12 +597,16 @@ export default function MazeGame() {
       {screen === "backpack" && (
         <BackpackMenu
           items={inventory}
+          potions={potions}
+          health={mazeHp}
+          maxHealth={mazeMaxHp}
           equipped={{
             weapon: weaponLevel,
             shield: shieldLevel,
             armor: armorLevel,
           }}
           onEquip={equip}
+          onUsePotion={usePotion}
           onClose={() => setScreen("maze")}
         />
       )}
