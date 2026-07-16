@@ -1,4 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+.item-list button { grid-template-columns: 28px 44px minmax(0, 1fr) auto !important; }
+.item-list button > .backpack-potion { justify-self: center; flex: none; width: 28px !important; min-width: 28px; height: 34px !important; margin: 5px 7px 0; border-width: 2px; border-radius: 2px 2px 7px 7px; animation: none; color: transparent !important; font-size: 0 !important; }
+.item-list button > .backpack-potion::before { left: 5px; top: -10px; width: 14px; height: 9px; border: 2px solid #d7eee0; background: linear-gradient(#7b5332 0 55%, #3e281a 56%); }
+.item-list button > .backpack-potion::after { content: ''; position: absolute; z-index: 1; left: 3px; right: 3px; bottom: 3px; height: 19px; border-top: 2px solid #baffc7; background: linear-gradient(90deg, #087431, #3ee877 48%, #119744); box-shadow: inset 3px 0 #ffffff42; }
+.item-list button > .backpack-potion i { z-index: 2; left: 8px; top: 15px; width: 10px; height: 10px; }
 .super-attack { border-color: #f2d05e !important; color: #fff4a8 !important; background: linear-gradient(#725310, #3b2707) !important; box-shadow: 0 0 16px #ffd34f66, 4px 4px #160e02 !important; }.super-attack:disabled { filter: grayscale(.8); opacity: .55; }
 .backpack-potion { width: 30px; height: 38px; margin: 0 5px; }.potion-item:disabled { opacity: .65; }
 .item-list button { position: relative; }.item-list button > kbd { display: grid; place-items: center; flex: 0 0 26px; width: 26px; height: 26px; border: 2px solid #c7c3b7; color: #161914; background: #f3f0e6; box-shadow: 2px 2px #0008; font-weight: 900; }.item-list button.keyboard-selected { border-color: #f0cd62; background: #3a3724; box-shadow: inset 0 0 0 2px #f0cd6244, 0 0 14px #f0cd6255; }

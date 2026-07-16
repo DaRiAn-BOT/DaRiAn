@@ -41,7 +41,7 @@ export default function MazeBoard({ maze, player, playerName, playerHp, playerMa
             {isCheckpoint && <span className="checkpoint-marker" title="Чекпоинт">◆</span>}
             {monster && <span className={`mini-monster ${hitMonsterId === monster.id ? 'monster-hit' : ''}`} title={`Мини-монстр: ${monster.hp} HP`}><i /><b>{monster.hp.toFixed(1).replace('.0', '')}</b></span>}
             {isLoot && <span className="loot">{maze.loot?.kind === 'weapon' ? '⚔' : maze.loot?.kind === 'armor' ? '♟' : '◆'}</span>}
-            {isPotion && <span className="health-potion" title="Зелёное зелье: +50 HP"><i /></span>}
+            {isPotion && <span className="health-potion" title="Зелье исцеления: +50 HP"><i /></span>}
             <span className="fog" style={{ opacity: darkness }} />
           </div>
         }))}
