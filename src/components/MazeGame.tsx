@@ -542,6 +542,7 @@ export default function MazeGame() {
       )}
       {screen === "clue" && (
         <Overlay
+          className="clue-overlay"
           icon="?"
           title={`Подсказка ${bossNumber} найдена`}
           text={`${storyClues[bossNumber - 1]}${equipmentLevels.includes(bossNumber + 1) ? " На следующем уровне в одном из тупиков тебя что-то ждёт." : ""}`}
@@ -659,12 +660,14 @@ export default function MazeGame() {
 }
 
 function Overlay({
+  className = "",
   icon,
   title,
   text,
   button,
   onClick,
 }: {
+  className?: string;
   icon: string;
   title: string;
   text: string;
@@ -672,7 +675,7 @@ function Overlay({
   onClick: () => void;
 }) {
   return (
-    <div className="story-card">
+    <div className={`story-card ${className}`}>
       <span>{icon}</span>
       <h2>{title}</h2>
       <p>{text}</p>

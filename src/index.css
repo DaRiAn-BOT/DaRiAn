@@ -72,6 +72,7 @@ body .maze-camera { width: min(82vw, 820px); }
 body .story-card, body .battle-card { width: min(94vw, 920px); max-width: none; }
 body .main-menu > p:not(.eyebrow) { max-width: 760px; }
 body .arena-fighters { height: clamp(250px, 48vh, 390px); }
+.clue-overlay { width: min(94vw, 980px) !important; padding: clamp(34px, 7vw, 72px) !important; }.clue-overlay > span { font-size: clamp(82px, 12vw, 132px); }.clue-overlay h2 { font-size: clamp(28px, 5vw, 46px); }.story-card.clue-overlay p { max-width: 780px; color: #d5ddd8; font-size: clamp(17px, 2.7vw, 24px); line-height: 1.75; }.clue-overlay button { min-width: 260px; padding: 16px 24px; font-size: 15px; }
 body .phone-controls { position: fixed; z-index: 30; inset: 0; width: 100dvw; height: 100dvh; max-width: none; overflow: auto; background: #050806; }
 body .app { background: linear-gradient(105deg, transparent 0 9%, #ffffff38 10%, #dce3df2e 14%, transparent 25%), linear-gradient(72deg, transparent 0 69%, #ffffff32 70%, #d8d8d82c 76%, transparent 88%), radial-gradient(ellipse at 18% 8%, #ffffff55 0 3%, #e8eeea35 10%, transparent 29%), radial-gradient(ellipse at 83% 68%, #ffffff4d 0 2%, #e5e5e532 11%, transparent 27%), repeating-linear-gradient(135deg, #070b09 0 2px, #020403 2px 10px); }
 body .app::before { opacity: .24; background-image: radial-gradient(ellipse, #e7d69c 0 1px, transparent 3px), radial-gradient(ellipse, #a9d2ba 0 1px, transparent 3px); }
