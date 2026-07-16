@@ -29,6 +29,7 @@ import { supabase } from "../lib/supabase";
 import AccountScreen from "./AccountScreen";
 import OpeningCutscene from "./OpeningCutscene";
 import SkinSelection from "./SkinSelection";
+import DeviceSelection from "./DeviceSelection";
 import { loadNickname, NICKNAME_EVENT } from "../lib/playerProfile";
 import {
   chasePlayer,
@@ -44,6 +45,7 @@ type Screen =
   | "achievements"
   | "controls"
   | "sound"
+  | "device-select"
   | "skin-select"
   | "intro"
   | "maze"
@@ -68,6 +70,7 @@ export default function MazeGame() {
   const [lootFound, setLootFound] = useState(saved?.lootFound ?? false);
   const [potionFound, setPotionFound] = useState(saved?.potionFound ?? false);
   const [selectedSkin, setSelectedSkin] = useState(saved?.selectedSkin ?? 0);
+  const [controlMode, setControlMode] = useState<'computer' | 'phone'>(saved?.controlMode ?? 'computer');
   const [facing] = useState<"up" | "down" | "left" | "right">("down");
   const [walkStep, setWalkStep] = useState(false);
   const [mazeAttacking, setMazeAttacking] = useState(false);
@@ -161,12 +164,14 @@ export default function MazeGame() {
       monsters,
       mazeHp,
       potionFound,
+      controlMode,
     });
   }, [
     achievements,
     armorLevel,
     attackDamage,
     cameraMode,
+    controlMode,
     checkpoint,
     clues,
     facing,
@@ -377,7 +382,7 @@ export default function MazeGame() {
     setMonsters(createMiniMonsters(first, 1));
     setPlayer(first.start);
     setCheckpoint(first.start);
-    setScreen("skin-select");
+    setScreen("device-select");
   };
   const exitGame = () => {
     stopMusic();
@@ -424,7 +429,7 @@ export default function MazeGame() {
   }, [checkpoint, screen]);
 
   return (
-    <section className="game-shell">
+    <section className={`game-shell ${controlMode === "phone" ? "phone-controls" : "computer-controls"}`}>
       {![
         "start",
         "account",
@@ -432,6 +437,7 @@ export default function MazeGame() {
         "achievements",
         "controls",
         "sound",
+        "device-select",
         "skin-select",
         "intro",
         "won",
@@ -484,6 +490,7 @@ export default function MazeGame() {
             hitMonsterId={hitMonsterId}
             onMove={move}
           />
+          {controlMode === "phone" && <button className="phone-backpack" onClick={() => setScreen("backpack")}>РЮКЗАК</button>}
           <button className={`maze-attack-button ${monsterInRange ? "enemy-near" : ""}`} onClick={attackMonster}>
             <span className="attack-icon" aria-hidden="true">⚔</span>
             <span className="attack-copy"><strong>АТАКОВАТЬ</strong><small>{monsterInRange ? "ВРАГ В ЗОНЕ УДАРА" : "БЛИЖНИЙ УДАР"}</small></span>
@@ -597,6 +604,9 @@ export default function MazeGame() {
       {screen === "intro" && (
         <OpeningCutscene onFinish={() => { startExplorationMusic(); setScreen("maze"); }} />
       )}
+      {screen === "device-select" && (
+        <DeviceSelection onComputer={() => { setControlMode('computer'); setScreen('skin-select'); }} onPhone={() => { setControlMode('phone'); void enableLandscapeMode(); setScreen('skin-select'); }} />
+      )}
       {screen === "skin-select" && (
         <SkinSelection selectedSkin={selectedSkin} onSelect={setSelectedSkin} onConfirm={() => setScreen("intro")} />
       )}
@@ -652,4 +662,12 @@ function getSafePoint(
   point?: Point,
 ): Point {
   return point && maze.cells[point.y]?.[point.x] ? point : maze.start;
+}
+
+async function enableLandscapeMode() {
+  try {
+    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    const orientation = screen.orientation as ScreenOrientation & { lock?: (mode: "landscape") => Promise<void> };
+    await orientation.lock?.("landscape");
+  } catch { /* Некоторые браузеры не разрешают принудительный поворот. */ }
 }

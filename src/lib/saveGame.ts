@@ -13,6 +13,7 @@ export type SavedProgress = {
   monsters?: MiniMonster[]
   mazeHp?: number
   potionFound?: boolean
+  controlMode?: 'computer' | 'phone'
 }
 
 const SAVE_KEY = 'maze-adventure-progress'
