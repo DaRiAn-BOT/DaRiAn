@@ -6,7 +6,9 @@
 .device-select-overlay { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; padding: 18px; background: #020403ef; }.device-select-card { width: min(560px, 100%); }.device-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }.device-options button { display: grid; place-items: center; gap: 7px; min-height: 145px; padding: 18px 12px; }.device-options b { color: #e7c875; font-size: 38px; }.device-options strong { font-size: 13px; }.device-options small { color: #aab4ae; font-size: 9px; line-height: 1.5; }
 .phone-backpack { position: fixed; z-index: 50; left: 48px; bottom: 178px; width: 116px; height: 48px; }
 .fullscreen-toggle { position: fixed; z-index: 90; right: 12px; bottom: 12px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; font-size: 23px; }
-:fullscreen .computer-controls, :fullscreen .computer-controls * { cursor: none !important; }
+html:fullscreen, html:fullscreen *, body:fullscreen, body:fullscreen * { cursor: none !important; }
+html:-webkit-full-screen, html:-webkit-full-screen *, body:-webkit-full-screen, body:-webkit-full-screen * { cursor: none !important; }
+.hide-cursor, .hide-cursor * { cursor: none !important; }
 @media (orientation: landscape) and (max-height: 600px) {
   body .phone-controls { width: min(100%, 720px); padding: 5px 130px; }
   .phone-controls header, .phone-controls .progress, .phone-controls .checkpoint, .phone-controls .camera-label, .phone-controls .hint, .phone-controls .attack-status { display: none; }

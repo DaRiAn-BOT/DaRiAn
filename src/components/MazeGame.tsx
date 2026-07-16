@@ -71,6 +71,7 @@ export default function MazeGame() {
   const [potionFound, setPotionFound] = useState(saved?.potionFound ?? false);
   const [selectedSkin, setSelectedSkin] = useState(saved?.selectedSkin ?? 0);
   const [controlMode, setControlMode] = useState<'computer' | 'phone'>(saved?.controlMode ?? 'computer');
+  const [fullscreenActive, setFullscreenActive] = useState(false);
   const [facing] = useState<"up" | "down" | "left" | "right">("down");
   const [walkStep, setWalkStep] = useState(false);
   const [mazeAttacking, setMazeAttacking] = useState(false);
@@ -118,6 +119,13 @@ export default function MazeGame() {
   }, []);
 
   useEffect(() => saveLifetimeStats(lifetimeStats), [lifetimeStats]);
+  useEffect(() => {
+    const detectFullscreen = () => setFullscreenActive(Boolean(document.fullscreenElement) || Math.abs(window.innerHeight - window.screen.height) < 5);
+    detectFullscreen();
+    document.addEventListener('fullscreenchange', detectFullscreen);
+    window.addEventListener('resize', detectFullscreen);
+    return () => { document.removeEventListener('fullscreenchange', detectFullscreen); window.removeEventListener('resize', detectFullscreen); };
+  }, []);
   useEffect(() => {
     const path = pathForScreen(screen);
     if (window.location.pathname !== path) window.history.pushState({ screen }, "", path);
@@ -439,7 +447,7 @@ export default function MazeGame() {
   }, [checkpoint, screen]);
 
   return (
-    <section className={`game-shell ${controlMode === "phone" ? "phone-controls" : "computer-controls"}`}>
+    <section className={`game-shell ${controlMode === "phone" ? "phone-controls" : "computer-controls"} ${fullscreenActive && controlMode === 'computer' ? 'hide-cursor' : ''}`}>
       {screen !== "device-select" && <button className="fullscreen-toggle" onClick={() => void toggleFullscreen(controlMode)} aria-label="Переключить полноэкранный режим">⛶</button>}
       {![
         "start",
