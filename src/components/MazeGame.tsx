@@ -95,7 +95,9 @@ export default function MazeGame() {
   );
   const monstersRef = useRef(monsters);
   const mazeMaxHp = 100 + clues * 2.5;
-  const [mazeHp, setMazeHp] = useState(saved?.mazeHp ?? mazeMaxHp);
+  const [mazeHp, setMazeHp] = useState(
+    saved?.mazeHp && saved.mazeHp > 0 ? saved.mazeHp : mazeMaxHp,
+  );
   const safeSavedPlayer = getSafePoint(maze, saved?.player);
   const [player, setPlayer] = useState<Point>(safeSavedPlayer);
   const playerRef = useRef(player);
@@ -461,11 +463,13 @@ export default function MazeGame() {
   const showGameOver = () => {
     setHasLost(true);
     addStat("defeats");
+    setMazeHp(mazeMaxHp);
     startMusic();
     setScreen("lost");
   };
   const retryBattle = () => {
     startExplorationMusic();
+    setMazeHp(mazeMaxHp);
     setScreen("battle");
   };
   const recordAction = (action: "attack" | "shield") =>
