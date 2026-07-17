@@ -39,6 +39,8 @@ import {
   MINI_MONSTER_DAMAGE,
   type MiniMonster,
 } from "../lib/miniMonsters";
+import { createBossRemark, createPersonalEnding } from "../lib/aiNarrative";
+import { bossNames } from "../lib/bosses";
 
 type Screen =
   | "start"
@@ -75,6 +77,8 @@ export default function MazeGame() {
   const [potions, setPotions] = useState(saved?.potions ?? 0);
   const [sealShards, setSealShards] = useState(saved?.sealShards ?? 0);
   const [dailyReward, setDailyReward] = useState(0);
+  const [aiBossRemark, setAiBossRemark] = useState<string | undefined>();
+  const [personalEnding, setPersonalEnding] = useState<string | null>(null);
   const [selectedSkin, setSelectedSkin] = useState(saved?.selectedSkin ?? 0);
   const [controlMode, setControlMode] = useState<'computer' | 'phone'>(saved?.controlMode ?? 'computer');
   const [fullscreenActive, setFullscreenActive] = useState(false);
@@ -123,6 +127,11 @@ export default function MazeGame() {
     stats,
   );
   const bossNumber = clues + 1;
+  const equipmentNames = {
+    weapon: weapons[weaponLevel].name,
+    shield: shields[shieldLevel].name,
+    armor: armors[armorLevel].name,
+  };
   const monsterInRange = monsters.some((enemy) => Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1);
   const addStat = useCallback((key: keyof GameStats) => {
     setStats((current) => ({ ...current, [key]: current[key] + 1 }));
@@ -130,6 +139,25 @@ export default function MazeGame() {
   }, []);
 
   useEffect(() => saveLifetimeStats(lifetimeStats), [lifetimeStats]);
+  useEffect(() => {
+    setAiBossRemark(undefined);
+  }, [bossNumber]);
+  useEffect(() => {
+    if ((screen !== "clue" && screen !== "battle") || aiBossRemark !== undefined) return;
+    let active = true;
+    void createBossRemark(bossNumber, bossNames[bossNumber - 1], stats, equipmentNames)
+      .then((remark) => { if (active) setAiBossRemark(remark ?? ""); });
+    return () => { active = false; };
+  }, [aiBossRemark, bossNumber, screen]);
+  useEffect(() => {
+    if (screen !== "won" || personalEnding) return;
+    let active = true;
+    void createPersonalEnding(stats, equipmentNames)
+      .then((ending) => {
+        if (active) setPersonalEnding(ending ?? "Корона разрушена, Малзар свободен, а герой возвращается домой, сохранив память обо всех стражах Лабиринта.");
+      });
+    return () => { active = false; };
+  }, [personalEnding, screen]);
   useEffect(() => {
     const reward = claimDailyEcho();
     if (!reward) return;
@@ -616,6 +644,7 @@ export default function MazeGame() {
           shieldLevel={shieldLevel}
           armorLevel={armorLevel}
           skin={selectedSkin}
+          aiRemark={aiBossRemark}
           onAction={recordAction}
           onHeroHealthChange={setMazeHp}
           onWin={winBattle}
@@ -740,7 +769,7 @@ export default function MazeGame() {
         <Overlay
           icon="♛"
           title="Лабиринт пройден!"
-          text={`Все ${TOTAL_LEVELS} подсказок найдены, а Король Лабиринта побеждён. Игра завершена!`}
+          text={personalEnding ?? "Лабиринт вспоминает твой путь и решает судьбу героев…"}
           button="Начать заново"
           onClick={restart}
         />
