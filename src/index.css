@@ -154,6 +154,7 @@
 .health-potion i { position: absolute; left: 30%; top: 28%; width: 40%; height: 35%; background: #c7ffcf; clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%); }
 @keyframes potion-glow { to { filter: brightness(1.25); translate: 0 -2px; } }
 .device-select-overlay { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; padding: 18px; background: #020403ef; }.device-select-card { width: min(560px, 100%); }.device-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }.device-options button { display: grid; place-items: center; gap: 7px; min-height: 145px; padding: 18px 12px; }.device-options b { color: #e7c875; font-size: 38px; }.device-options strong { font-size: 13px; }.device-options small { color: #aab4ae; font-size: 9px; line-height: 1.5; }
+.device-options button strong, .device-options button small { color: #101210; }
 .phone-backpack { position: fixed; z-index: 50; left: 48px; bottom: 178px; width: 116px; height: 48px; }
 .fullscreen-toggle { position: fixed; z-index: 90; right: 12px; bottom: 12px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; font-size: 23px; }
 .power-warning { margin: 10px auto; padding: 9px 12px; border: 3px solid #ffbd69; color: #fff3cf; background: #7b1d13; box-shadow: 4px 4px #190503, 0 0 16px #ff4a2b88; font-weight: 900; text-align: center; animation: warning-flash .55s ease-in-out infinite alternate; }.power-warning small { display: block; margin-top: 3px; font-size: 9px; }.battle-actions button small { display: block; margin-top: 3px; font-size: 8px; opacity: .8; }
@@ -423,3 +424,18 @@ h1, h2 { margin: 0; } h1 { font-size: clamp(27px, 6vw, 40px); letter-spacing: -.
 .controls-list button.binding-active { color: #fff4c7; background: #69501c; animation: battle-line-in .5s ease-in-out infinite alternate; }
 .controls-card > small { display: block; margin: -10px 0 16px; color: #829088; }
 @media (max-height: 720px) and (min-width: 701px) { .computer-controls.gameplay-screen .maze-camera { width: min(calc(100dvh - 20px), calc(100vw - 24px), 680px); } }
+
+/* Compact boss arena keeps damage text and warnings visible outside fullscreen. */
+.computer-controls.gameplay-screen:not(.hide-cursor) .battle-card { width: min(98vw, 920px); max-height: calc(100dvh - 12px); padding: 8px 18px; overflow: hidden; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .arena-fighters { height: clamp(120px, 27vh, 205px); margin: -5px auto 0; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .battle-card h2 { margin-bottom: 3px; font-size: 21px; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .boss-ability { margin: 2px 0 4px; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .battle-mechanics { margin: 3px 0; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .battle-dialogue-line { margin: 3px auto; padding: 4px 8px; font-size: 9px; line-height: 1.25; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .bar { margin: 4px 0; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .bar > div:first-child { margin-bottom: 2px; font-size: 10px; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .bar-track { height: 7px; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .equipment-line { margin: 3px 0 0; font-size: 9px; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .battle-message { min-height: 28px; margin: 5px 0; font-size: 10px; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .battle-actions button { padding: 8px 14px; }
+.computer-controls.gameplay-screen:not(.hide-cursor) .power-warning { position: absolute; z-index: 25; top: 8px; left: 50%; width: min(360px, 58%); margin: 0; padding: 7px 10px; transform: translateX(-50%); }

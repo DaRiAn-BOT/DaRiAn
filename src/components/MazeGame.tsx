@@ -132,6 +132,7 @@ export default function MazeGame() {
     stats,
   );
   const bossNumber = clues + 1;
+  const visibleClues = Math.min(TOTAL_LEVELS, clues + (["clue", "battle", "lost"].includes(screen) ? 1 : 0));
   const playerDisplayName = accountNickname || "Герой";
   const controlBindings = loadControlBindings();
   const equipmentNames = {
@@ -609,12 +610,12 @@ export default function MazeGame() {
           <h1>Тайны лабиринта</h1>
         </div>
         <div className="counter">
-          <strong>{clues}</strong>
+          <strong>{visibleClues}</strong>
           <span>/ {TOTAL_LEVELS} подсказок</span>
         </div>
       </header>
       <div className="progress">
-        <i style={{ width: `${(clues / TOTAL_LEVELS) * 100}%` }} />
+        <i style={{ width: `${(visibleClues / TOTAL_LEVELS) * 100}%` }} />
       </div>
       {screen === "maze" && (
         <>
