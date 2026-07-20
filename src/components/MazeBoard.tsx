@@ -3,15 +3,15 @@ import HeroModel from './HeroModel'
 import type { MiniMonster } from '../lib/miniMonsters'
 
 type Facing = 'up' | 'down' | 'left' | 'right'
-type Props = { level: number; maze: Maze; player: Point; playerName: string; playerHp: number; playerMaxHp: number; checkpoint: Point; monsters: MiniMonster[]; cameraMode: 2 | 3; lootFound: boolean; potionFound: boolean; skin: number; facing: Facing; walkStep: boolean; attackAnimation: boolean; hitMonsterId: number | null; onMove: (dx: number, dy: number) => void }
+type Props = { level: number; maze: Maze; player: Point; playerName: string; playerHp: number; playerMaxHp: number; checkpoint: Point; monsters: MiniMonster[]; cameraMode: 2 | 3; lootFound: boolean; potionFound: boolean; skin: number; facing: Facing; walkStep: boolean; attackAnimation: boolean; hitMonsterId: number | null; portalMode?: boolean; onMove: (dx: number, dy: number) => void }
 const controls = [
   { label: '↑', dx: 0, dy: -1, className: 'up' }, { label: '←', dx: -1, dy: 0, className: 'left' },
   { label: '↓', dx: 0, dy: 1, className: 'down' }, { label: '→', dx: 1, dy: 0, className: 'right' },
 ]
 const CELL_SIZE = 36
 
-export default function MazeBoard({ level, maze, player, playerName, playerHp, playerMaxHp, checkpoint, monsters, cameraMode, lootFound, potionFound, skin, facing, walkStep, attackAnimation, hitMonsterId, onMove }: Props) {
-  const location = level < 10 ? 'ancient' : level < 20 ? 'magic' : 'guardian'
+export default function MazeBoard({ level, maze, player, playerName, playerHp, playerMaxHp, checkpoint, monsters, cameraMode, lootFound, potionFound, skin, facing, walkStep, attackAnimation, hitMonsterId, portalMode = false, onMove }: Props) {
+  const location = portalMode ? 'portal' : level < 10 ? 'ancient' : level < 20 ? 'magic' : 'guardian'
   const cameraScale = cameraMode === 2 ? 2.15 : 1.15
   const playerOffset = `translate(-${(player.x + .5) * CELL_SIZE}px, -${(player.y + .5) * CELL_SIZE}px)`
   const cameraTransform = cameraMode === 2
@@ -19,7 +19,7 @@ export default function MazeBoard({ level, maze, player, playerName, playerHp, p
     : `rotateX(32deg) scale(${cameraScale}) ${playerOffset}`
   return <>
     <div className={`maze-camera camera-${cameraMode} location-${location}`}>
-      <div className="location-name">{location === 'ancient' ? 'ДРЕВНИЙ ЛАБИРИНТ' : location === 'magic' ? 'МАГИЧЕСКИЕ ЗАЛЫ' : 'КРЕПОСТЬ СТРАЖЕЙ'}</div>
+      <div className="location-name">{location === 'portal' ? 'ДОРОГА ДОМОЙ' : location === 'ancient' ? 'ДРЕВНИЙ ЛАБИРИНТ' : location === 'magic' ? 'МАГИЧЕСКИЕ ЗАЛЫ' : 'КРЕПОСТЬ СТРАЖЕЙ'}</div>
       <div className="maze-player-name">♙ {playerName}</div>
       <div className="maze-health"><span>HP</span><b>{Math.ceil(playerHp)} / {Math.ceil(playerMaxHp)}</b><i><em style={{ width: `${playerHp / playerMaxHp * 100}%` }} /></i></div>
       <div className="maze-world" style={{
@@ -39,11 +39,11 @@ export default function MazeBoard({ level, maze, player, playerName, playerHp, p
           const lightRadius = 2
           const darkness = distance <= lightRadius ? 0 : 1
           return <div key={`${x}-${y}`} className={`${open ? 'cell path' : 'cell wall'} ${isPlayer ? 'player-cell' : ''}`}>
-            {isClue && <span className="clue">?</span>}
+            {isClue && (portalMode ? <span className="home-portal" title="Портал домой"><i /></span> : <span className="clue">?</span>)}
             {isCheckpoint && <span className="checkpoint-marker" title="Чекпоинт">◆</span>}
             {monster && <span className={`mini-monster ${hitMonsterId === monster.id ? 'monster-hit' : ''}`} title={`Мини-монстр: ${monster.hp} HP`}><i /><b>{monster.hp.toFixed(1).replace('.0', '')}</b></span>}
-            {isLoot && <span className="loot">{maze.loot?.kind === 'weapon' ? '⚔' : maze.loot?.kind === 'armor' ? '♟' : '◆'}</span>}
-            {isPotion && <span className="health-potion" title="Зелье исцеления: +50 HP"><i /></span>}
+            {!portalMode && isLoot && <span className="loot">{maze.loot?.kind === 'weapon' ? '⚔' : maze.loot?.kind === 'armor' ? '♟' : '◆'}</span>}
+            {!portalMode && isPotion && <span className="health-potion" title="Зелье исцеления: +50 HP"><i /></span>}
             <span className="fog" style={{ opacity: darkness }} />
           </div>
         }))}

@@ -10,7 +10,7 @@ const random = (seed: number) => {
 }
 
 export function createMaze(level: number): Maze {
-  const baseSize = 10 + Math.floor((level - 1) / 3) * 2
+  const baseSize = 8 + Math.floor((level - 1) / 3) * 2
   const size = baseSize - (level >= 15 ? 2 : 0)
   const cells = Array.from({ length: size }, () => Array(size).fill(false))
   const rng = random(level * 7919 + 17)

@@ -41,6 +41,7 @@ import {
 } from "../lib/miniMonsters";
 import { createBossRemark, createPersonalEnding } from "../lib/aiNarrative";
 import { bossNames } from "../lib/bosses";
+import BedroomEnding from "./BedroomEnding";
 
 type Screen =
   | "start"
@@ -59,6 +60,8 @@ type Screen =
   | "upgrade"
   | "backpack"
   | "lost"
+  | "portal"
+  | "room"
   | "won";
 const equipmentLevels = [5, 7, 10, 14, 15, 20];
 
@@ -108,8 +111,8 @@ export default function MazeGame() {
   const [checkpoint, setCheckpoint] = useState<Point>(
     getSafePoint(maze, saved?.checkpoint ?? safeSavedPlayer),
   );
-  const [screen, setScreen] = useState<Screen>(
-    () => screenFromPath(saved?.active ?? false),
+  const [screen, setScreen] = useState<Screen>(() =>
+    saved?.epilogueStage ?? screenFromPath(saved?.active ?? false),
   );
   const [battleBackpackOpen, setBattleBackpackOpen] = useState(false);
   const [runStarted, setRunStarted] = useState(saved?.active ?? false);
@@ -234,6 +237,7 @@ export default function MazeGame() {
       potions,
       controlMode,
       sealShards,
+      epilogueStage: screen === "portal" || screen === "room" ? screen : undefined,
     });
   }, [
     achievements,
@@ -331,7 +335,7 @@ export default function MazeGame() {
 
   const move = useCallback(
     (dx: number, dy: number) => {
-      if (screen !== "maze") return;
+      if (screen !== "maze" && screen !== "portal") return;
       setPlayer((current) => {
         const next = { x: current.x + dx, y: current.y + dy };
         if (!maze.cells[next.y]?.[next.x]) return current;
@@ -344,6 +348,13 @@ export default function MazeGame() {
         sounds.step();
         addStat("steps");
         setWalkStep((step) => !step);
+        if (screen === "portal") {
+          if (next.x === maze.clue.x && next.y === maze.clue.y) {
+            sounds.pickup(); stopMusic(); setScreen("room");
+          }
+          playerRef.current = next;
+          return next;
+        }
         if (!potionFound && maze.potion.x === next.x && maze.potion.y === next.y) {
           sounds.pickup();
           setPotions((count) => count + 1);
@@ -437,9 +448,13 @@ export default function MazeGame() {
       if (weaponLevel === 0 && shieldLevel === 0 && armorLevel === 0)
         unlock("weak_gear");
       setClues(TOTAL_LEVELS);
-      setRunStarted(false);
-      stopMusic();
-      setScreen("won");
+      const epilogueMaze = createMaze(TOTAL_LEVELS + 1);
+      setPlayer(epilogueMaze.start);
+      setCheckpoint(epilogueMaze.start);
+      setMonsters([]);
+      setRunStarted(true);
+      startExplorationMusic();
+      setScreen("portal");
       return;
     }
     const nextMaze = createMaze(bossNumber + 1);
@@ -633,6 +648,33 @@ export default function MazeGame() {
           </p>
         </>
       )}
+      {screen === "portal" && (
+        <>
+          <div className="checkpoint">Малзар свободен · Найди портал и вернись домой</div>
+          <MazeBoard
+            level={TOTAL_LEVELS + 1}
+            maze={maze}
+            player={player}
+            playerName="Абдурахман"
+            playerHp={mazeHp}
+            playerMaxHp={mazeMaxHp}
+            checkpoint={checkpoint}
+            monsters={[]}
+            cameraMode={cameraMode}
+            lootFound
+            potionFound
+            skin={selectedSkin}
+            facing={facing}
+            walkStep={walkStep}
+            attackAnimation={false}
+            hitMonsterId={null}
+            portalMode
+            onMove={move}
+          />
+          <p className="portal-objective">✦ Последний путь: найди светящийся портал</p>
+        </>
+      )}
+      {screen === "room" && <BedroomEnding skin={selectedSkin} onFinish={() => { setRunStarted(false); setScreen("won"); }} />}
       {screen === "battle" && (
         <><BossBattle
           key={bossNumber}

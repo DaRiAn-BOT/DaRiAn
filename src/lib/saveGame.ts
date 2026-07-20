@@ -16,6 +16,7 @@ export type SavedProgress = {
   potions?: number
   controlMode?: 'computer' | 'phone'
   sealShards?: number
+  epilogueStage?: 'portal' | 'room'
 }
 
 const SAVE_KEY = 'maze-adventure-progress'
