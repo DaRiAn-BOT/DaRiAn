@@ -29,6 +29,8 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
   const [powerWarning, setPowerWarning] = useState(false)
   const [battleDialogue, setBattleDialogue] = useState('')
   const [heroBattleDialogue, setHeroBattleDialogue] = useState('')
+  const [attackCombo, setAttackCombo] = useState(0)
+  const [bossStunned, setBossStunned] = useState(false)
   const [superUsed, setSuperUsed] = useState(false)
   const heroHpRef = useRef(heroHp)
   const powerAttackReady = useRef(false)
@@ -86,12 +88,15 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     if (busy) return
     const defending = action === 'shield'
     const superAttack = action === 'super'
-    if (superAttack && (number % 10 !== 0 || superUsed)) return
+    if (superAttack && superUsed) return
     setBusy(true)
     const isPowerAttack = powerAttackReady.current
     setPowerWarning(false)
     onAction(defending ? 'shield' : 'attack')
     if (superAttack) setSuperUsed(true)
+    const nextCombo = defending ? 0 : Math.min(3, attackCombo + 1)
+    const comboBonus = Math.max(0, nextCombo - 1) * .3
+    setAttackCombo(nextCombo)
     if (defending) sounds.shield(); else {
       sounds.attack(); usedAttack.current = true
       setAttackAnimation(true); setBossHitAnimation(true)
@@ -102,10 +107,21 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     const skinReduction = !defending && !finalBoss && (number - 1) % 4 === 0 ? .5 : 0
     const counterDamage = shieldLevel === 3 ? 2.5 : .5 + shieldLevel * .5
     const crownResistance = basicLoadout && !defending ? .5 : 0
-    const damage = defending ? counterDamage : Math.max(.5, attackDamage + weaponBonus + fireBonus - skinReduction - crownResistance + (superAttack ? 2.5 : 0))
+    const damage = defending ? counterDamage : Math.max(.5, attackDamage + weaponBonus + fireBonus - skinReduction - crownResistance + comboBonus + (superAttack ? 2.5 : 0))
     const nextBossHp = Math.max(0, bossHp - damage)
     setBossHp(nextBossHp)
     if (!nextBossHp) { setMessage('Победа!'); setBattleDialogue(getBattleDialogue(number, 'defeat')); setHeroBattleDialogue(getHeroBattleDialogue(number, 'defeat')); setWinning(true); sounds.victory(); window.setTimeout(() => onWin(!usedAttack.current), 1500); return }
+    if (bossStunned) {
+      setBossStunned(false)
+      window.setTimeout(() => {
+        powerAttackReady.current = Math.random() < powerAttackChance
+        setPowerWarning(powerAttackReady.current)
+        setMessage(`Босс оглушён и пропускает ответный удар! Нанесено ${formatNumber(damage)} урона.`)
+        setBattleDialogue('Печать сковала моё тело… Я не могу ответить!')
+        setBusy(false)
+      }, 350)
+      return
+    }
     const isRaging = (finalBoss || (number - 1) % 4 === 2) && bossHp <= bossMax / 2
     const heavyDamage = !finalBoss && (number - 1) % 4 === 1 ? 1 : 0
     const rageDamage = fullBossDamage + (isRaging ? (finalBoss ? 3.5 : 2) : 0) + heavyDamage
@@ -125,10 +141,16 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
       setHeroHp(nextHeroHp)
       onHeroHealthChange(nextHeroHp)
       powerAttackReady.current = !finalStand && Math.random() < powerAttackChance
+      if (defending && isPowerAttack) {
+        setBossStunned(true)
+        powerAttackReady.current = false
+      }
       setPowerWarning(powerAttackReady.current)
       const warning = powerAttackReady.current ? ' Босс готовит мощный удар — используй щит!' : ''
       const result = finalStand
         ? 'Последний удар Малзара оставил тебе 2 HP. Ещё один удар решит судьбу Лабиринта!'
+        : defending && isPowerAttack
+        ? `Идеальный блок! Получено ${formatNumber(dealtDamage)} урона, босс оглушён на следующий ход.`
         : defending
         ? `Щит выдержал! Получено ${formatNumber(dealtDamage)} урона.`
         : `${superAttack ? 'Суперудар! ' : isPowerAttack ? 'Мощный удар! ' : ''}Ты атаковал на ${formatNumber(damage)}. Босс ответил на ${formatNumber(dealtDamage)}.`
@@ -146,9 +168,9 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     if (!combatStarted) return
     const battleHotkeys = (event: KeyboardEvent) => {
       const bindings = loadControlBindings()
-      if (event.code !== bindings.attack && event.code !== bindings.shield) return
+      if (event.code !== bindings.attack && event.code !== bindings.shield && event.code !== bindings.super) return
       event.preventDefault()
-      if (!busy) turn(event.code === bindings.shield ? 'shield' : 'attack')
+      if (!busy) turn(event.code === bindings.shield ? 'shield' : event.code === bindings.super ? 'super' : 'attack')
     }
     window.addEventListener('keydown', battleHotkeys)
     return () => window.removeEventListener('keydown', battleHotkeys)
@@ -172,6 +194,7 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     <p className="eyebrow">{finalBoss ? 'ФИНАЛЬНЫЙ БОСС' : `СТРАЖ ПОДСКАЗКИ ${number}`}</p>
     <h2>{bossNames[number - 1]}</h2>
     <p className="boss-ability">{ability}</p>
+    <div className="battle-mechanics"><span>{bossHp <= bossMax / 2 ? '⚠ ФАЗА II · ЯРОСТЬ' : 'ФАЗА I · ИСПЫТАНИЕ'}</span>{attackCombo > 1 && <span>СЕРИЯ ×{attackCombo} · +{formatNumber((attackCombo - 1) * .3)}</span>}{bossStunned && <span>✦ БОСС ОГЛУШЁН</span>}</div>
     {battleDialogue && <blockquote className="battle-dialogue-line">{bossNames[number - 1]}: «{battleDialogue}»</blockquote>}
     {heroBattleDialogue && <blockquote className="battle-dialogue-line hero-battle-line">Герой: «{heroBattleDialogue}»</blockquote>}
     <Health label="Босс" value={bossHp} max={bossMax} danger />
@@ -182,7 +205,7 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     <div className="battle-actions">
       <button disabled={busy} className="battle-attack" onClick={() => turn('attack')}>⚔ <span>Атаковать</span><small>{formatControlCode(controlBindings.attack)}</small></button>
       <button disabled={busy} className="secondary battle-shield" onClick={() => turn('shield')}>◈ <span>Щит</span><small>{formatControlCode(controlBindings.shield)}</small></button>
-      {number % 10 === 0 && <button disabled={busy || superUsed} className="super-attack" onClick={() => turn('super')}>✦ <span>{superUsed ? 'Использовано' : 'Суперудар'}</span><small>+2,5 УРОНА</small></button>}
+      <button disabled={busy || superUsed} className="super-attack" onClick={() => turn('super')}>✦ <span>{superUsed ? 'Использовано' : 'Суперудар'}</span><small>{formatControlCode(controlBindings.super)} · +2,5</small></button>
     </div>
   </div>
 }

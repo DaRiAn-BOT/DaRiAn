@@ -20,7 +20,6 @@ export default function MazeBoard({ level, maze, player, playerName, playerHp, p
   return <>
     <div className={`maze-camera camera-${cameraMode} location-${location}`}>
       <div className="location-name">{location === 'portal' ? 'ДОРОГА ДОМОЙ' : location === 'ancient' ? 'ДРЕВНИЙ ЛАБИРИНТ' : location === 'magic' ? 'МАГИЧЕСКИЕ ЗАЛЫ' : 'КРЕПОСТЬ СТРАЖЕЙ'}</div>
-      <div className="maze-player-name">♙ {playerName}</div>
       <div className="maze-health"><span>HP</span><b>{Math.ceil(playerHp)} / {Math.ceil(playerMaxHp)}</b><i><em style={{ width: `${playerHp / playerMaxHp * 100}%` }} /></i></div>
       <div className="maze-world" style={{
         gridTemplateColumns: `repeat(${maze.cells.length}, ${CELL_SIZE}px)`,
@@ -48,7 +47,7 @@ export default function MazeBoard({ level, maze, player, playerName, playerHp, p
           </div>
         }))}
       </div>
-      <span className="maze-hero-overlay"><HeroModel skin={skin} className={`facing-${facing} ${walkStep ? 'walk-a' : 'walk-b'} ${attackAnimation ? 'maze-attacking' : ''}`} /></span>
+      <span className="maze-hero-overlay"><b className="hero-nameplate">{playerName}</b><HeroModel skin={skin} className={`facing-${facing} ${walkStep ? 'walk-a' : 'walk-b'} ${attackAnimation ? 'maze-attacking' : ''}`} /></span>
     </div>
     <p className="camera-label">Камера: {cameraMode === 2 ? 'от второго лица' : 'от третьего лица'}</p>
     <div className="controls" aria-label="Управление">

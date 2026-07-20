@@ -1,14 +1,14 @@
-export type ControlAction = 'up' | 'down' | 'left' | 'right' | 'attack' | 'shield' | 'backpack' | 'camera'
+export type ControlAction = 'up' | 'down' | 'left' | 'right' | 'attack' | 'super' | 'shield' | 'backpack' | 'camera'
 export type ControlBindings = Record<ControlAction, string>
 
 export const controlLabels: Record<ControlAction, string> = {
   up: 'Идти вперёд', down: 'Идти назад', left: 'Идти влево', right: 'Идти вправо',
-  attack: 'Атаковать', shield: 'Использовать щит', backpack: 'Открыть рюкзак', camera: 'Переключить камеру',
+  attack: 'Атаковать', super: 'Использовать суперудар', shield: 'Использовать щит', backpack: 'Открыть рюкзак', camera: 'Переключить камеру',
 }
 
 export const defaultBindings: ControlBindings = {
   up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD',
-  attack: 'Space', shield: 'KeyR', backpack: 'KeyE', camera: 'KeyQ',
+  attack: 'Space', super: 'KeyZ', shield: 'KeyR', backpack: 'KeyE', camera: 'KeyQ',
 }
 
 const STORAGE_KEY = 'maze-control-bindings'

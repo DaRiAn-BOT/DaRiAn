@@ -2,18 +2,17 @@ import { useEffect, useState } from 'react'
 import HeroModel from './HeroModel'
 import { sounds } from '../lib/sounds'
 
-type Props = { skin: number; onFinish: () => void }
+type Props = { skin: number; playerName: string; onFinish: () => void }
 
-const scene = [
-  { speaker: 'Рассвет', text: 'Тьма расступается. Абдурахман чувствует под собой знакомую кровать.' },
-  { speaker: 'Абдурахман', text: 'Я дома… Значит, это всё-таки был сон?' },
-  { speaker: 'Голос из-за двери', text: 'Абдурахман, просыпайся!' },
-  { speaker: 'Мама', text: 'Абдурахман, пойдём завтракать.' },
-  { speaker: 'Абдурахман', text: 'Сейчас, мам! Но почему у меня в руке осталась золотая пыль?' },
-]
-
-export default function BedroomEnding({ skin, onFinish }: Props) {
+export default function BedroomEnding({ skin, playerName, onFinish }: Props) {
   const [step, setStep] = useState(0)
+  const scene = [
+    { speaker: 'Рассвет', text: `Тьма расступается. ${playerName} чувствует под собой знакомую кровать.` },
+    { speaker: playerName, text: 'Я дома… Значит, это всё-таки был сон?' },
+    { speaker: 'Голос из-за двери', text: `${playerName}, просыпайся!` },
+    { speaker: 'Мама', text: `${playerName}, пойдём завтракать.` },
+    { speaker: playerName, text: 'Сейчас, мам! Но почему у меня в руке осталась золотая пыль?' },
+  ]
   const next = () => {
     sounds.menu()
     if (step === scene.length - 1) onFinish()

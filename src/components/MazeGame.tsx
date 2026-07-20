@@ -55,6 +55,7 @@ type Screen =
   | "device-select"
   | "skin-select"
   | "intro"
+  | "intro-controls"
   | "maze"
   | "clue"
   | "battle"
@@ -131,6 +132,7 @@ export default function MazeGame() {
     stats,
   );
   const bossNumber = clues + 1;
+  const playerDisplayName = accountNickname || "Герой";
   const controlBindings = loadControlBindings();
   const equipmentNames = {
     weapon: weapons[weaponLevel].name,
@@ -587,6 +589,7 @@ export default function MazeGame() {
         "device-select",
         "skin-select",
         "intro",
+        "intro-controls",
         "won",
       ].includes(screen) && (
         <button
@@ -619,7 +622,7 @@ export default function MazeGame() {
             level={bossNumber}
             maze={maze}
             player={player}
-            playerName={accountNickname ?? (accountEmail ? "Игрок" : "Гость")}
+            playerName={playerDisplayName}
             playerHp={mazeHp}
             playerMaxHp={mazeMaxHp}
             checkpoint={checkpoint}
@@ -652,7 +655,7 @@ export default function MazeGame() {
             level={TOTAL_LEVELS + 1}
             maze={maze}
             player={player}
-            playerName="Абдурахман"
+            playerName={playerDisplayName}
             playerHp={mazeHp}
             playerMaxHp={mazeMaxHp}
             checkpoint={checkpoint}
@@ -671,7 +674,7 @@ export default function MazeGame() {
           <p className="portal-objective">✦ Последний путь: найди светящийся портал</p>
         </>
       )}
-      {screen === "room" && <BedroomEnding skin={selectedSkin} onFinish={() => { setRunStarted(false); setScreen("won"); }} />}
+      {screen === "room" && <BedroomEnding skin={selectedSkin} playerName={playerDisplayName} onFinish={() => { setRunStarted(false); setScreen("won"); }} />}
       {screen === "battle" && (
         <><BossBattle
           key={bossNumber}
@@ -780,6 +783,9 @@ export default function MazeGame() {
       {screen === "controls" && (
         <ControlsScreen onClose={() => setScreen("start")} />
       )}
+      {screen === "intro-controls" && (
+        <ControlsScreen closeLabel="Начать путь" onClose={() => { startExplorationMusic(); setScreen("maze"); }} />
+      )}
       {screen === "sound" && (
         <SoundSettings
           onClose={() => setScreen("start")}
@@ -787,7 +793,7 @@ export default function MazeGame() {
         />
       )}
       {screen === "intro" && (
-        <OpeningCutscene onFinish={() => { startExplorationMusic(); setScreen("maze"); }} />
+        <OpeningCutscene onFinish={() => setScreen("intro-controls")} />
       )}
       {screen === "device-select" && (
         <DeviceSelection onComputer={() => { setControlMode('computer'); setScreen('skin-select'); }} onPhone={() => { setControlMode('phone'); void enableLandscapeMode(); setScreen('skin-select'); }} />

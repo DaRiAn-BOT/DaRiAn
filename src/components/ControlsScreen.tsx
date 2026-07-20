@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { controlLabels, formatControlCode, loadControlBindings, saveControlBinding, type ControlAction } from '../lib/controlBindings'
 
-export default function ControlsScreen({ onClose }: { onClose: () => void }) {
+export default function ControlsScreen({ onClose, closeLabel = 'Назад' }: { onClose: () => void; closeLabel?: string }) {
   const [bindings, setBindings] = useState(loadControlBindings)
   const [editing, setEditing] = useState<ControlAction | null>(null)
   useEffect(() => {
@@ -19,6 +19,6 @@ export default function ControlsScreen({ onClose }: { onClose: () => void }) {
     <p>Нажми на клавишу действия, затем выбери новую кнопку.</p>
     <div className="controls-list">{actions.map((action) => <div key={action}><button className={editing === action ? 'binding-active' : ''} onClick={() => setEditing(action)}>{editing === action ? 'НАЖМИ КЛАВИШУ…' : formatControlCode(bindings[action])}</button><span>{controlLabels[action]}</span></div>)}</div>
     <small>Стрелки и ESC работают всегда.</small>
-    <button onClick={onClose}>Назад</button>
+    <button onClick={onClose}>{closeLabel}</button>
   </div>
 }
