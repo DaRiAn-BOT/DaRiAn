@@ -405,3 +405,20 @@ h1, h2 { margin: 0; } h1 { font-size: clamp(27px, 6vw, 40px); letter-spacing: -.
 .phone-controls .maze-camera.location-magic .wall { background: radial-gradient(circle at 50% 50%, #e5d4ff65 0 4%, transparent 5%), linear-gradient(135deg, #69518f 0 16%, #34244f 17% 68%, #0c0715 69%); background-size: 24px 24px, auto; }
 .phone-controls .maze-camera.location-guardian .wall { background: linear-gradient(90deg, transparent 45%, #e6a4563d 46% 54%, transparent 55%), repeating-linear-gradient(135deg, #74513a 0 12px, #382419 13px 25px, #120a06 26px 30px); }
 .phone-controls .maze-camera.location-magic::after, .phone-controls .maze-camera.location-guardian::after { animation: none; }
+
+/* Gameplay occupies one viewport; desktop uses remappable keyboard controls. */
+.game-shell.gameplay-screen { max-height: 100dvh; overflow: hidden; }
+.computer-controls.gameplay-screen > header,
+.computer-controls.gameplay-screen > .progress,
+.computer-controls.gameplay-screen .camera-label,
+.computer-controls.gameplay-screen .controls,
+.computer-controls.gameplay-screen .maze-attack-button,
+.computer-controls.gameplay-screen .attack-status,
+.computer-controls.gameplay-screen .portal-objective,
+.computer-controls.gameplay-screen > .hint,
+.computer-controls.gameplay-screen > .checkpoint { display: none; }
+.computer-controls.gameplay-screen .maze-camera { width: min(calc(100dvh - 20px), calc(100vw - 24px), 680px); }
+.controls-list button { min-width: 135px; padding: 7px 9px; border: 1px solid #80662d; color: #17201c; background: #d5ad58; box-shadow: 0 2px #80662d; font-size: 11px; font-weight: 900; }
+.controls-list button.binding-active { color: #fff4c7; background: #69501c; animation: battle-line-in .5s ease-in-out infinite alternate; }
+.controls-card > small { display: block; margin: -10px 0 16px; color: #829088; }
+@media (max-height: 720px) and (min-width: 701px) { .computer-controls.gameplay-screen .maze-camera { width: min(calc(100dvh - 20px), calc(100vw - 24px), 680px); } }

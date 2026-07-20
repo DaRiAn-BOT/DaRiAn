@@ -7,6 +7,7 @@ import HeroModel from './HeroModel'
 import EquipmentIcon from './EquipmentIcon'
 import { bossDialogues } from '../lib/bossDialogues'
 import { getBattleDialogue, getHeroBattleDialogue } from '../lib/battleDialogue'
+import { formatControlCode, loadControlBindings } from '../lib/controlBindings'
 
 type Props = { number: number; attackDamage: number; heroStartHp: number; heroMaxHp: number; weaponLevel: number; shieldLevel: number; armorLevel: number; skin: number; aiRemark?: string; onAction: (action: 'attack' | 'shield') => void; onHeroHealthChange: (health: number) => void; onWin: (shieldOnly: boolean) => void; onLose: () => void }
 const formatNumber = (value: number) => Number(value.toFixed(1)).toLocaleString('ru-RU')
@@ -34,6 +35,7 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
   const usedAttack = useRef(false)
   const finalStandUsed = useRef(false)
   const powerAttackChance = finalBoss ? .28 : .35
+  const controlBindings = loadControlBindings()
   const ability = finalBoss ? `Королевская ярость: при ранении сильнее атакует и ослабляет щит${basicLoadout ? ' · Базовое снаряжение пробудило Стойкость Короны' : ''}` : ['Каменная кожа: снижает урон', 'Тяжёлый удар: наносит больше урона', 'Ярость: сильнее при низком HP', 'Крушитель: ослабляет щит'][(number - 1) % 4]
 
   useEffect(() => {
@@ -143,9 +145,10 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
   useEffect(() => {
     if (!combatStarted) return
     const battleHotkeys = (event: KeyboardEvent) => {
-      if (event.code !== 'Space' && event.code !== 'KeyR') return
+      const bindings = loadControlBindings()
+      if (event.code !== bindings.attack && event.code !== bindings.shield) return
       event.preventDefault()
-      if (!busy) turn(event.code === 'KeyR' ? 'shield' : 'attack')
+      if (!busy) turn(event.code === bindings.shield ? 'shield' : 'attack')
     }
     window.addEventListener('keydown', battleHotkeys)
     return () => window.removeEventListener('keydown', battleHotkeys)
@@ -177,8 +180,8 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     <p className="battle-message">{message} · Твой урон: {formatNumber(attackDamage)}</p>
     {powerWarning && <div className="power-warning" role="alert">⚠ МОЩНЫЙ УДАР!<small>ИСПОЛЬЗУЙ ЩИТ</small></div>}
     <div className="battle-actions">
-      <button disabled={busy} className="battle-attack" onClick={() => turn('attack')}>⚔ <span>Атаковать</span><small>ПРОБЕЛ</small></button>
-      <button disabled={busy} className="secondary battle-shield" onClick={() => turn('shield')}>◈ <span>Щит</span><small>R / К</small></button>
+      <button disabled={busy} className="battle-attack" onClick={() => turn('attack')}>⚔ <span>Атаковать</span><small>{formatControlCode(controlBindings.attack)}</small></button>
+      <button disabled={busy} className="secondary battle-shield" onClick={() => turn('shield')}>◈ <span>Щит</span><small>{formatControlCode(controlBindings.shield)}</small></button>
       {number % 10 === 0 && <button disabled={busy || superUsed} className="super-attack" onClick={() => turn('super')}>✦ <span>{superUsed ? 'Использовано' : 'Суперудар'}</span><small>+2,5 УРОНА</small></button>}
     </div>
   </div>

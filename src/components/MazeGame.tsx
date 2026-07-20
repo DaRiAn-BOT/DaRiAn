@@ -42,6 +42,7 @@ import {
 import { createBossRemark, createPersonalEnding } from "../lib/aiNarrative";
 import { bossNames } from "../lib/bosses";
 import BedroomEnding from "./BedroomEnding";
+import { formatControlCode, loadControlBindings } from "../lib/controlBindings";
 
 type Screen =
   | "start"
@@ -130,6 +131,7 @@ export default function MazeGame() {
     stats,
   );
   const bossNumber = clues + 1;
+  const controlBindings = loadControlBindings();
   const equipmentNames = {
     weapon: weapons[weaponLevel].name,
     shield: shields[shieldLevel].name,
@@ -540,8 +542,7 @@ export default function MazeGame() {
   useEffect(() => {
     if (screen !== "battle") return;
     const toggleBattleBackpack = (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase();
-      if (key !== "e" && key !== "у") return;
+      if (event.code !== loadControlBindings().backpack) return;
       event.preventDefault(); sounds.menu(); setBattleBackpackOpen((open) => !open);
     };
     window.addEventListener("keydown", toggleBattleBackpack);
@@ -574,7 +575,7 @@ export default function MazeGame() {
   }, [battleBackpackOpen, checkpoint, screen]);
 
   return (
-    <section className={`game-shell ${controlMode === "phone" ? "phone-controls" : "computer-controls"} ${fullscreenActive && controlMode === 'computer' ? 'hide-cursor' : ''}`}>
+    <section className={`game-shell ${controlMode === "phone" ? "phone-controls" : "computer-controls"} ${screen === "maze" || screen === "portal" || screen === "battle" ? "gameplay-screen" : ""} ${fullscreenActive && controlMode === 'computer' ? 'hide-cursor' : ''}`}>
       {screen !== "device-select" && <button className="fullscreen-toggle" onClick={() => void toggleFullscreen(controlMode)} aria-label="Переключить полноэкранный режим">⛶</button>}
       {![
         "start",
@@ -614,10 +615,6 @@ export default function MazeGame() {
       </div>
       {screen === "maze" && (
         <>
-          <div className="checkpoint">
-            ◆ {accountNickname ?? (accountEmail ? "Игрок" : "Гость")} · Чекпоинт
-            сохранён · Страж {bossNumber}
-          </div>
           <MazeBoard
             level={bossNumber}
             maze={maze}
@@ -641,10 +638,10 @@ export default function MazeGame() {
           <button className={`maze-attack-button ${monsterInRange ? "enemy-near" : ""}`} onClick={attackMonster}>
             <span className="attack-icon" aria-hidden="true">⚔</span>
             <span className="attack-copy"><strong>АТАКОВАТЬ</strong><small>{monsterInRange ? "ВРАГ В ЗОНЕ УДАРА" : "БЛИЖНИЙ УДАР"}</small></span>
-            <kbd>ПРОБЕЛ</kbd>
+            <kbd>{formatControlCode(controlBindings.attack)}</kbd>
           </button>
           <p className={`attack-status ${monsterInRange ? "danger" : ""}`}>
-            {monsterInRange ? "ВРАГ РЯДОМ — ЖМИ ПРОБЕЛ!" : "Подойди к монстру на соседнюю клетку и нажми пробел"}
+            {monsterInRange ? `ВРАГ РЯДОМ — ЖМИ ${formatControlCode(controlBindings.attack)}!` : `Подойди к монстру и нажми ${formatControlCode(controlBindings.attack)}`}
           </p>
         </>
       )}
@@ -692,7 +689,7 @@ export default function MazeGame() {
           onWin={winBattle}
           onLose={showGameOver}
         />
-        <button className="battle-backpack-button" onClick={() => setBattleBackpackOpen(true)}>РЮКЗАК · E / У</button>
+        <button className="battle-backpack-button" onClick={() => setBattleBackpackOpen(true)}>РЮКЗАК · {formatControlCode(controlBindings.backpack)}</button>
         {battleBackpackOpen && <div className="battle-backpack-overlay"><BackpackMenu items={inventory} potions={potions} health={mazeHp} maxHealth={mazeMaxHp} equipped={{ weapon: weaponLevel, shield: shieldLevel, armor: armorLevel }} onEquip={equip} onUsePotion={usePotion} onClose={() => setBattleBackpackOpen(false)} /></div>}
         </>
       )}
@@ -815,9 +812,6 @@ export default function MazeGame() {
           button="Начать заново"
           onClick={restart}
         />
-      )}
-      {screen === "maze" && (
-        <p className="hint"><strong>ПРОБЕЛ — АТАКОВАТЬ</strong> · E / У — рюкзак · Q / Й — переключить камеру</p>
       )}
     </section>
   );
