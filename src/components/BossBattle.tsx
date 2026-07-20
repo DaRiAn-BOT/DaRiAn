@@ -26,6 +26,7 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
   const [combatStarted, setCombatStarted] = useState(false)
   const [attackAnimation, setAttackAnimation] = useState(false)
   const [bossHitAnimation, setBossHitAnimation] = useState(false)
+  const [bossAttackAnimation, setBossAttackAnimation] = useState(false)
   const [powerWarning, setPowerWarning] = useState(false)
   const [battleDialogue, setBattleDialogue] = useState('')
   const [heroBattleDialogue, setHeroBattleDialogue] = useState('')
@@ -49,6 +50,8 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
   useEffect(() => {
     if (!combatStarted) return
     const timer = window.setTimeout(() => {
+      setBossAttackAnimation(true)
+      window.setTimeout(() => setBossAttackAnimation(false), 680)
       const healthAfterHit = Math.max(0, Math.min(heroStartHp, heroMaxHp) - fullBossDamage)
       powerAttackReady.current = Math.random() < powerAttackChance
       setPowerWarning(powerAttackReady.current)
@@ -95,7 +98,8 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     onAction(defending ? 'shield' : 'attack')
     if (superAttack) setSuperUsed(true)
     const nextCombo = defending ? 0 : Math.min(3, attackCombo + 1)
-    const comboBonus = Math.max(0, nextCombo - 1) * .3
+    const comboBonus = nextCombo === 2 ? .3 : 0
+    const spamPunished = !defending && attackCombo >= 2
     setAttackCombo(nextCombo)
     if (defending) sounds.shield(); else {
       sounds.attack(); usedAttack.current = true
@@ -107,7 +111,8 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     const skinReduction = !defending && !finalBoss && (number - 1) % 4 === 0 ? .5 : 0
     const counterDamage = shieldLevel === 3 ? 2.5 : .5 + shieldLevel * .5
     const crownResistance = basicLoadout && !defending ? .5 : 0
-    const damage = defending ? counterDamage : Math.max(.5, attackDamage + weaponBonus + fireBonus - skinReduction - crownResistance + comboBonus + (superAttack ? 2.5 : 0))
+    const rawDamage = Math.max(.5, attackDamage + weaponBonus + fireBonus - skinReduction - crownResistance + comboBonus + (superAttack ? 2.5 : 0))
+    const damage = defending ? counterDamage : spamPunished ? Math.max(.5, rawDamage * .4) : rawDamage
     const nextBossHp = Math.max(0, bossHp - damage)
     setBossHp(nextBossHp)
     if (!nextBossHp) { setMessage('Победа!'); setBattleDialogue(getBattleDialogue(number, 'defeat')); setHeroBattleDialogue(getHeroBattleDialogue(number, 'defeat')); setWinning(true); sounds.victory(); window.setTimeout(() => onWin(!usedAttack.current), 1500); return }
@@ -124,11 +129,13 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     }
     const isRaging = (finalBoss || (number - 1) % 4 === 2) && bossHp <= bossMax / 2
     const heavyDamage = !finalBoss && (number - 1) % 4 === 1 ? 1 : 0
-    const rageDamage = fullBossDamage + (isRaging ? (finalBoss ? 3.5 : 2) : 0) + heavyDamage
+    const rageDamage = fullBossDamage + (isRaging ? (finalBoss ? 3.5 : 2) : 0) + heavyDamage + (spamPunished ? 4 : 0)
     const shieldBlock = 4 + shieldLevel - (!finalBoss && (number - 1) % 4 === 3 ? 2 : 0) - (finalBoss && isRaging ? 1 : 0)
     const incomingDamage = defending ? Math.max(2, rageDamage - shieldBlock) : rageDamage * (isPowerAttack ? 3 : 1)
     const armorReduction = armorLevel === 3 ? 3 : armorLevel * 1.5
     window.setTimeout(() => {
+      setBossAttackAnimation(true)
+      window.setTimeout(() => setBossAttackAnimation(false), 680)
       const currentHeroHp = heroHpRef.current
       const bossDamage = Math.max(.5, incomingDamage - armorReduction)
       const finalStand = finalBoss && !defending && !isPowerAttack && !finalStandUsed.current && nextBossHp <= damage
@@ -151,6 +158,8 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
         ? 'Последний удар Малзара оставил тебе 2 HP. Ещё один удар решит судьбу Лабиринта!'
         : defending && isPowerAttack
         ? `Идеальный блок! Получено ${formatNumber(dealtDamage)} урона, босс оглушён на следующий ход.`
+        : spamPunished
+        ? `Босс прочитал серию! Твой удар ослаблен, контратака нанесла ${formatNumber(dealtDamage)} урона. Используй щит.`
         : defending
         ? `Щит выдержал! Получено ${formatNumber(dealtDamage)} урона.`
         : `${superAttack ? 'Суперудар! ' : isPowerAttack ? 'Мощный удар! ' : ''}Ты атаковал на ${formatNumber(damage)}. Босс ответил на ${formatNumber(dealtDamage)}.`
@@ -187,14 +196,14 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
   return <div className={`battle-card ${finalBoss ? 'final-arena' : ''} ${winning ? 'victory' : ''}`}>
     <div className="arena-fighters">
       <HeroModel skin={skin} className={`battle-hero ${attackAnimation ? 'attacking' : ''}`} />
-      <div className={`boss-portrait ${finalBoss ? 'final' : ''} ${bossHitAnimation ? 'boss-hit' : ''}`}>
+      <div className={`boss-portrait ${finalBoss ? 'final' : ''} ${bossHitAnimation ? 'boss-hit' : ''} ${bossAttackAnimation ? 'boss-attacking' : ''}`}>
         <img src={finalBoss ? '/bosses/maze-king.png' : '/bosses/stone-guardian.png'} alt={finalBoss ? 'Король Лабиринта' : `Каменный страж ${number}`} />
       </div>
     </div>
     <p className="eyebrow">{finalBoss ? 'ФИНАЛЬНЫЙ БОСС' : `СТРАЖ ПОДСКАЗКИ ${number}`}</p>
     <h2>{bossNames[number - 1]}</h2>
     <p className="boss-ability">{ability}</p>
-    <div className="battle-mechanics"><span>{bossHp <= bossMax / 2 ? '⚠ ФАЗА II · ЯРОСТЬ' : 'ФАЗА I · ИСПЫТАНИЕ'}</span>{attackCombo > 1 && <span>СЕРИЯ ×{attackCombo} · +{formatNumber((attackCombo - 1) * .3)}</span>}{bossStunned && <span>✦ БОСС ОГЛУШЁН</span>}</div>
+    <div className="battle-mechanics"><span>{bossHp <= bossMax / 2 ? '⚠ ФАЗА II · ЯРОСТЬ' : 'ФАЗА I · ИСПЫТАНИЕ'}</span>{attackCombo === 2 && <span>⚠ БОСС ЧИТАЕТ СЕРИЮ · ИСПОЛЬЗУЙ ЩИТ</span>}{attackCombo > 2 && <span>ЗАЩИТА БОССА АКТИВНА</span>}{bossStunned && <span>✦ БОСС ОГЛУШЁН</span>}</div>
     {battleDialogue && <blockquote className="battle-dialogue-line">{bossNames[number - 1]}: «{battleDialogue}»</blockquote>}
     {heroBattleDialogue && <blockquote className="battle-dialogue-line hero-battle-line">Герой: «{heroBattleDialogue}»</blockquote>}
     <Health label="Босс" value={bossHp} max={bossMax} danger />
