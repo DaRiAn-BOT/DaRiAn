@@ -24,7 +24,7 @@ export function createBossRemark(
     `Напиши одну реплику до 25 слов от босса ${bossName}, стража №${bossNumber}. ` +
       `Герой победил ${stats.bosses} боссов, проиграл ${stats.defeats} раз, применил щит ${stats.shields} раз. ` +
       `Его оружие: ${equipment.weapon}, щит: ${equipment.shield}, броня: ${equipment.armor}. ` +
-      `Босс должен осмысленно заметить одну из этих особенностей и продолжить сюжет о короне Малзара.`,
+      `Босс должен осмысленно заметить одну из этих особенностей и продолжить сюжет о Сбое Системы.`,
     220,
   )
 }
@@ -36,7 +36,7 @@ export function createPersonalEnding(stats: GameStats, equipment: EquipmentNames
       `Герой прошёл лабиринт за ${minutes} минут, победил ${stats.bosses} боссов, проиграл ${stats.defeats} раз, ` +
       `атаковал ${stats.attacks} раз, использовал щит ${stats.shields} раз и нашёл ${stats.items} предметов. ` +
       `Финальное снаряжение: ${equipment.weapon}, ${equipment.shield}, ${equipment.armor}. ` +
-      `Опиши судьбу героя, Малзара и лабиринта. Концовка должна зависеть от этих поступков.`,
+      `Опиши судьбу героя, освобождённых стражей и лабиринта. Концовка должна зависеть от этих поступков.`,
     600,
   )
 }

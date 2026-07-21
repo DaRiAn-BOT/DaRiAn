@@ -162,7 +162,7 @@ export default function MazeGame() {
     let active = true;
     void createPersonalEnding(stats, equipmentNames)
       .then((ending) => {
-        if (active) setPersonalEnding(ending ?? "Корона разрушена, Малзар свободен, а герой возвращается домой, сохранив память обо всех стражах Лабиринта.");
+        if (active) setPersonalEnding(ending ?? "Сбой уничтожен, стражи свободны, а герой возвращается домой, сохранив память обо всех обитателях Лабиринта.");
       });
     return () => { active = false; };
   }, [personalEnding, screen]);
@@ -651,7 +651,7 @@ export default function MazeGame() {
       )}
       {screen === "portal" && (
         <>
-          <div className="checkpoint">Малзар свободен · Найди портал и вернись домой</div>
+          <div className="checkpoint">Сбой уничтожен · Найди портал и вернись домой</div>
           <MazeBoard
             level={TOTAL_LEVELS + 1}
             maze={maze}

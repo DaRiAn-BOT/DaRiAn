@@ -12,7 +12,8 @@ type Props = { level: number; shards: number; inventory: InventoryItem[]; onBuy:
 type ShopProps = Props & { potions: number; onBuyPotion: () => void }
 
 export default function ShopScreen({ level, shards, inventory, potions, onBuy, onBuyPotion, onClose }: ShopProps) {
-  const location = level < 10 ? 'ancient' : level < 20 ? 'magic' : 'guardian'
+  const worldNumber = Math.min(5, Math.ceil(level / 6))
+  const location = worldNumber === 1 ? 'ancient' : worldNumber === 3 ? 'magic' : worldNumber === 4 ? 'laboratory' : worldNumber === 5 ? 'cosmic' : 'guardian'
   return <div className={`shop-card shop-${location}`}>
     <div className="shop-header"><div><p className="eyebrow">МАГАЗИН СНАРЯЖЕНИЯ</p><h2>Арсенал Лабиринта</h2></div><strong>◈ {shards} Эха</strong></div>
     <p>Эхо Лабиринта остаётся после освобождённых стражей. Обменяй его на снаряжение, способное выдержать глубины.</p>

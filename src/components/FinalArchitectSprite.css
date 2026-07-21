@@ -1,0 +1,18 @@
+.architect-sprite {
+  display: block;
+  width: 32px;
+  height: 32px;
+  background: url('/sprites/game-architect-error-sprite-sheet-32.png') 0 0 / 256px 160px no-repeat;
+  image-rendering: pixelated;
+  transform: scale(5.2);
+  transform-origin: center bottom;
+}
+.architect-sprite.idle { animation: architect-four .8s steps(4) infinite; }
+.architect-sprite.dash { background-position-y: -32px; animation: architect-six .66s steps(6) both; }
+.architect-sprite.strike { background-position-y: -64px; animation: architect-six .78s steps(6) both; }
+.architect-sprite.shield { background-position-y: -96px; animation: architect-four .72s steps(4) infinite; }
+.architect-sprite.death { background-position-y: -128px; animation: architect-eight 1.5s steps(8) forwards; }
+@keyframes architect-four { to { background-position-x: -128px; } }
+@keyframes architect-six { to { background-position-x: -192px; } }
+@keyframes architect-eight { to { background-position-x: -256px; } }
+@media (max-width: 700px) { .architect-sprite { transform: scale(4.2); } }

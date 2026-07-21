@@ -11,15 +11,29 @@ const controls = [
 const CELL_SIZE = 36
 
 export default function MazeBoard({ level, maze, player, playerName, playerHp, playerMaxHp, checkpoint, monsters, cameraMode, lootFound, potionFound, skin, facing, walkStep, attackAnimation, hitMonsterId, portalMode = false, onMove }: Props) {
-  const location = portalMode ? 'portal' : level < 10 ? 'ancient' : level < 20 ? 'magic' : 'guardian'
+  const worldNumber = Math.min(5, Math.ceil(level / 6))
+  const location = portalMode ? 'portal' : worldNumber === 1 ? 'ancient' : worldNumber === 3 ? 'magic' : worldNumber === 4 ? 'laboratory' : worldNumber === 5 ? 'cosmic' : 'guardian'
   const cameraScale = cameraMode === 2 ? 2.15 : 1.15
   const playerOffset = `translate(-${(player.x + .5) * CELL_SIZE}px, -${(player.y + .5) * CELL_SIZE}px)`
   const cameraTransform = cameraMode === 2
     ? `rotateX(57deg) scale(${cameraScale}) ${playerOffset}`
     : `rotateX(32deg) scale(${cameraScale}) ${playerOffset}`
+  const locationName = location === 'portal'
+    ? 'ДОРОГА ДОМОЙ'
+    : location === 'ancient'
+    ? 'МИР 1: ЗАБЫТЫЙ ЛЕС И БОЛОТА'
+    : worldNumber === 2
+    ? 'МИР 2: АДСКАЯ ЦИТАДЕЛЬ И ПОДЗЕМЕЛЬЯ'
+    : worldNumber === 3
+    ? 'МИР 3: ЛЕДЯНЫЕ ПИКИ И ТУНДРА'
+    : worldNumber === 4
+    ? 'МИР 4: ЗАБРОШЕННАЯ ЛАБОРАТОРИЯ'
+    : worldNumber === 5
+    ? 'МИР 5: КОСМИЧЕСКАЯ БЕЗДНА'
+    : 'КРЕПОСТЬ СТРАЖЕЙ'
   return <>
     <div className={`maze-camera camera-${cameraMode} location-${location}`}>
-      <div className="location-name">{location === 'portal' ? 'ДОРОГА ДОМОЙ' : location === 'ancient' ? 'ДРЕВНИЙ ЛАБИРИНТ' : location === 'magic' ? 'МАГИЧЕСКИЕ ЗАЛЫ' : 'КРЕПОСТЬ СТРАЖЕЙ'}</div>
+      <div className="location-name">{locationName}</div>
       <div className="maze-health"><span>HP</span><b>{Math.ceil(playerHp)} / {Math.ceil(playerMaxHp)}</b><i><em style={{ width: `${playerHp / playerMaxHp * 100}%` }} /></i></div>
       <div className="maze-world" style={{
         gridTemplateColumns: `repeat(${maze.cells.length}, ${CELL_SIZE}px)`,

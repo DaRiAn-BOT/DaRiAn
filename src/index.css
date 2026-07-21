@@ -445,3 +445,26 @@ h1, h2 { margin: 0; } h1 { font-size: clamp(27px, 6vw, 40px); letter-spacing: -.
 .computer-controls.gameplay-screen:not(.hide-cursor) .battle-message { min-height: 28px; margin: 5px 0; font-size: 10px; }
 .computer-controls.gameplay-screen:not(.hide-cursor) .battle-actions button { padding: 8px 14px; }
 .computer-controls.gameplay-screen:not(.hide-cursor) .power-warning { position: absolute; z-index: 25; top: 8px; left: 50%; width: min(360px, 58%); margin: 0; padding: 7px 10px; transform: translateX(-50%); }
+
+/* Мир 4: заброшенная лаборатория */
+.location-laboratory { border-color: #527e7d; background: radial-gradient(circle at center, #102a29, #030707 72%); box-shadow: 0 0 0 2px #0b1d1c, 0 0 28px #42d6c044, inset 0 0 45px #000; }
+.location-laboratory .location-name { border-color: #70c5bb; color: #cafff7; background: #09211fe8; }
+.location-laboratory .wall { background: linear-gradient(90deg, transparent 47%, #63f0d62b 48% 52%, transparent 53%), repeating-linear-gradient(135deg, #3d5657 0 11px, #1d3031 12px 25px, #071010 26px 29px); border-color: #061313; box-shadow: inset 3px 3px 4px #a4fff02b, inset -5px -6px 8px #000e; }
+.location-laboratory .path { background: radial-gradient(circle at 50% 50%, #47716d, #263d3b 56%, #0b1716); border-color: #1c3432; }
+.location-laboratory .player-cell { background: radial-gradient(circle, #79ead8, #356d65 48%, #102b28); }
+.location-laboratory::after { background: radial-gradient(circle at 50% 48%, #4dffe11a 0 23%, transparent 49%, #000a 100%); }
+.shop-laboratory { border-color: #5b8f8d; background: radial-gradient(circle at top, #123b38, #070e0f 68%); }
+.shop-laboratory .shop-items article { border-color: #47716f; background: #102625; }
+
+/* Мир 5: космическая бездна */
+.boss-portrait.architect-portrait { display: flex; align-items: flex-end; justify-content: center; padding-bottom: 42px; overflow: visible; }
+.boss-portrait.architect-portrait::after { background: radial-gradient(ellipse, #21ff6b55, #ff263c22 38%, transparent 70%); }
+.boss-portrait.animated-portrait { display: flex; align-items: flex-end; justify-content: center; padding-bottom: 42px; overflow: visible; }
+.location-cosmic { border-color: #57478f; background: radial-gradient(circle at center, #151033, #020207 72%); box-shadow: 0 0 0 2px #17102d, 0 0 32px #7b4dff55, inset 0 0 48px #000; }
+.location-cosmic .location-name { border-color: #9a7cff; color: #eee8ff; background: #110b2ce8; }
+.location-cosmic .wall { background: radial-gradient(circle at 22% 18%, #f2ecff7d 0 2%, transparent 3%), radial-gradient(circle at 72% 66%, #996eff70 0 3%, transparent 4%), linear-gradient(135deg, #352c5b 0 16%, #181331 17% 68%, #05040d 69%); background-size: 23px 21px, 31px 29px, auto; border-color: #0d0920; box-shadow: inset 3px 3px 5px #b9a7ff25, inset -5px -6px 8px #000e; }
+.location-cosmic .path { background: radial-gradient(circle at 50% 50%, #554784, #292143 56%, #0c0917); border-color: #211838; }
+.location-cosmic .player-cell { background: radial-gradient(circle, #b29aff, #5b468f 48%, #21163d); }
+.location-cosmic::after { background: radial-gradient(circle at 50% 48%, #956dff24 0 23%, transparent 50%, #000b 100%); }
+.shop-cosmic { border-color: #725cc2; background: radial-gradient(circle at top, #251b55, #070511 68%); }
+.shop-cosmic .shop-items article { border-color: #604ba0; background: #1b1538; }

@@ -8,12 +8,17 @@ import EquipmentIcon from './EquipmentIcon'
 import { bossDialogues } from '../lib/bossDialogues'
 import { getBattleDialogue, getHeroBattleDialogue } from '../lib/battleDialogue'
 import { formatControlCode, loadControlBindings } from '../lib/controlBindings'
+import { getAnimatedBossSheet, getBossImage } from '../lib/bossVisuals'
+import FinalArchitectSprite, { type ArchitectAnimation } from './FinalArchitectSprite'
+import AnimatedBossSprite from './AnimatedBossSprite'
 
 type Props = { number: number; attackDamage: number; heroStartHp: number; heroMaxHp: number; weaponLevel: number; shieldLevel: number; armorLevel: number; skin: number; aiRemark?: string; onAction: (action: 'attack' | 'shield') => void; onHeroHealthChange: (health: number) => void; onWin: (shieldOnly: boolean) => void; onLose: () => void }
 const formatNumber = (value: number) => Number(value.toFixed(1)).toLocaleString('ru-RU')
 
 export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxHp, weaponLevel, shieldLevel, armorLevel, skin, aiRemark, onAction, onHeroHealthChange, onWin, onLose }: Props) {
   const finalBoss = number === TOTAL_LEVELS
+  const bossImage = getBossImage(number)
+  const animatedBossSheet = getAnimatedBossSheet(number)
   const basicLoadout = finalBoss && weaponLevel === 0 && shieldLevel === 0 && armorLevel === 0
   const bossMax = 15 + (number - 1) * 2.45 + Math.max(0, number - 10) * .18 + (basicLoadout ? 6 : 0)
   const fullBossDamage = 6 + (number - 1) * .38 + (finalBoss ? -2.5 : 0) + (basicLoadout ? .5 : 0)
@@ -155,7 +160,7 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
       setPowerWarning(powerAttackReady.current)
       const warning = powerAttackReady.current ? ' Босс готовит мощный удар — используй щит!' : ''
       const result = finalStand
-        ? 'Последний удар Малзара оставил тебе 2 HP. Ещё один удар решит судьбу Лабиринта!'
+        ? 'Сбой Системы оставил тебе 2 HP. Ещё один удар решит судьбу Лабиринта!'
         : defending && isPowerAttack
         ? `Идеальный блок! Получено ${formatNumber(dealtDamage)} урона, босс оглушён на следующий ход.`
         : spamPunished
@@ -185,8 +190,22 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
     return () => window.removeEventListener('keydown', battleHotkeys)
   }, [busy, combatStarted])
 
+  const architectAnimation: ArchitectAnimation = winning
+    ? 'death'
+    : bossAttackAnimation
+    ? powerWarning ? 'strike' : 'dash'
+    : attackCombo > 2
+    ? 'shield'
+    : 'idle'
+  const regularBossAnimation: 'idle' | 'attack' | 'shield' | 'death' = winning ? 'death' : bossAttackAnimation || bossHitAnimation ? 'attack' : attackCombo > 2 ? 'shield' : 'idle'
+  const renderBoss = (animation = regularBossAnimation) => finalBoss
+    ? <FinalArchitectSprite animation={architectAnimation} label={bossNames[number - 1]} />
+    : animatedBossSheet
+    ? <AnimatedBossSprite src={animatedBossSheet} animation={animation} label={bossNames[number - 1]} />
+    : <img src={bossImage} alt={bossNames[number - 1]} />
+
   if (!combatStarted) return <div className={`battle-card boss-dialogue ${finalBoss ? 'final-arena' : ''}`}>
-    <div className="arena-fighters"><HeroModel skin={skin} className="battle-hero" /><div className={`boss-portrait ${finalBoss ? 'final' : ''}`}><img src={finalBoss ? '/bosses/maze-king.png' : '/bosses/stone-guardian.png'} alt={bossNames[number - 1]} /></div></div>
+    <div className="arena-fighters"><HeroModel skin={skin} className="battle-hero" /><div className={`boss-portrait ${finalBoss ? 'final architect-portrait' : animatedBossSheet ? 'animated-portrait' : ''}`}>{renderBoss('idle')}</div></div>
     <p className="eyebrow">{dialogueStep + 1} / {dialogueLines.length}</p>
     <h2>{currentDialogue.speaker === 'boss' ? bossNames[number - 1] : 'Герой'}</h2>
     <p className={`dialogue-text ${currentDialogue.speaker}`}>{currentDialogue.text}</p>
@@ -196,8 +215,8 @@ export default function BossBattle({ number, attackDamage, heroStartHp, heroMaxH
   return <div className={`battle-card ${finalBoss ? 'final-arena' : ''} ${winning ? 'victory' : ''}`}>
     <div className="arena-fighters">
       <HeroModel skin={skin} className={`battle-hero ${attackAnimation ? 'attacking' : ''}`} />
-      <div className={`boss-portrait ${finalBoss ? 'final' : ''} ${bossHitAnimation ? 'boss-hit' : ''} ${bossAttackAnimation ? 'boss-attacking' : ''}`}>
-        <img src={finalBoss ? '/bosses/maze-king.png' : '/bosses/stone-guardian.png'} alt={finalBoss ? 'Король Лабиринта' : `Каменный страж ${number}`} />
+      <div className={`boss-portrait ${finalBoss ? 'final architect-portrait' : animatedBossSheet ? 'animated-portrait' : ''} ${!animatedBossSheet && bossHitAnimation ? 'boss-hit' : ''} ${!animatedBossSheet && bossAttackAnimation ? 'boss-attacking' : ''}`}>
+        {renderBoss()}
       </div>
     </div>
     <p className="eyebrow">{finalBoss ? 'ФИНАЛЬНЫЙ БОСС' : `СТРАЖ ПОДСКАЗКИ ${number}`}</p>
