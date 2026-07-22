@@ -468,3 +468,49 @@ h1, h2 { margin: 0; } h1 { font-size: clamp(27px, 6vw, 40px); letter-spacing: -.
 .location-cosmic::after { background: radial-gradient(circle at 50% 48%, #956dff24 0 23%, transparent 50%, #000b 100%); }
 .shop-cosmic { border-color: #725cc2; background: radial-gradient(circle at top, #251b55, #070511 68%); }
 .shop-cosmic .shop-items article { border-color: #604ba0; background: #1b1538; }
+
+/* Палитра текущего фэнтези-босса приходит из GAME_BOSSES_REGISTRY. */
+.battle-card .boss-portrait::after { background: radial-gradient(ellipse, var(--boss-primary, #d5ad58), transparent 68%); }
+.battle-card .boss-portrait img { filter: drop-shadow(0 8px 8px #000c) drop-shadow(0 0 12px var(--boss-glow, #d5ad58)); }
+.battle-card .boss-portrait { isolation: auto; background: transparent; }
+
+/* Новый герой из human-rogue-warrior-combat-sprite-sheet-source.png. */
+.sprite-hero-shell { position: relative; display: block; background: none !important; image-rendering: pixelated; image-rendering: crisp-edges; }
+.sprite-hero-shell::before, .sprite-hero-shell::after { display: none !important; }
+.hero-sprite-sheet { position: absolute; inset: 0; display: block; background-image: url('/sprites/human-rogue-warrior-combat-sprite-sheet-transparent.png'); background-repeat: no-repeat; background-size: 600% 600%; background-position: 0 0; image-rendering: pixelated; image-rendering: crisp-edges; filter: drop-shadow(3px 5px 0 #000a); }
+.maze-hero-overlay .sprite-hero-shell { position: absolute; left: -100%; bottom: 0; width: 300%; height: 100%; }
+.maze-hero-overlay .hero-sprite-sheet { background-position: 0 0; }
+.maze-hero-overlay .walk-a .hero-sprite-sheet { background-position: 0 0; transform: translateY(0); }
+.maze-hero-overlay .walk-b .hero-sprite-sheet { background-position: 20% 0; transform: translateY(-2px); }
+.maze-hero-overlay .maze-attacking .hero-sprite-sheet { animation: rogue-light-slash .42s steps(1, end) both; }
+.battle-hero.sprite-hero-shell { flex: 0 0 clamp(150px, 19vw, 210px); width: clamp(150px, 19vw, 210px); height: clamp(100px, 12.67vw, 140px); margin: 0 0 16px -3%; }
+.battle-hero .hero-sprite-sheet { background-position: 0 0; }
+.battle-hero.attacking .hero-sprite-sheet { animation: rogue-light-slash .78s steps(1, end) both; }
+.victory .battle-hero .hero-sprite-sheet { animation: rogue-victory 1.4s steps(1, end) both; }
+.bedroom-hero.sprite-hero-shell { width: 150px; height: 100px; }
+.bedroom-hero .hero-sprite-sheet { background-position: 0 0; }
+.skin-preview.sprite-hero-shell { width: 54px; height: 36px; }
+.skin-option .skin-preview .hero-sprite-sheet { inset: 0; width: 100%; height: 100%; border-radius: 0; background-color: transparent; background-size: 600% 600%; }
+.sprite-hero-shell.skin-1 .hero-sprite-sheet { filter: hue-rotate(35deg) drop-shadow(3px 5px 0 #000a); }
+.sprite-hero-shell.skin-2 .hero-sprite-sheet { filter: hue-rotate(80deg) drop-shadow(3px 5px 0 #000a); }
+.sprite-hero-shell.skin-3 .hero-sprite-sheet { filter: hue-rotate(145deg) drop-shadow(3px 5px 0 #000a); }
+.sprite-hero-shell.skin-4 .hero-sprite-sheet { filter: hue-rotate(190deg) drop-shadow(3px 5px 0 #000a); }
+.sprite-hero-shell.skin-5 .hero-sprite-sheet { filter: hue-rotate(235deg) drop-shadow(3px 5px 0 #000a); }
+.sprite-hero-shell.skin-6 .hero-sprite-sheet { filter: sepia(.65) drop-shadow(3px 5px 0 #000a); }
+.sprite-hero-shell.skin-7 .hero-sprite-sheet { filter: grayscale(.75) drop-shadow(3px 5px 0 #000a); }
+.sprite-hero-shell.skin-8 .hero-sprite-sheet { filter: hue-rotate(300deg) saturate(1.3) drop-shadow(3px 5px 0 #000a); }
+.sprite-hero-shell.skin-9 .hero-sprite-sheet { filter: grayscale(1) brightness(.55) drop-shadow(3px 5px 0 #000a); }
+@keyframes rogue-light-slash { 0% { background-position: 0 20%; } 28% { background-position: 20% 20%; } 55% { background-position: 40% 20%; } 82% { background-position: 60% 20%; } 100% { background-position: 0 0; } }
+@keyframes rogue-victory { 0%, 35% { background-position: 60% 0; transform: translateY(0); } 55%, 80% { background-position: 0 0; transform: translateY(-8px); } 100% { background-position: 20% 0; transform: translateY(0); } }
+
+.battle-hero.move-beam .hero-sprite-sheet,
+.battle-hero.move-smash .hero-sprite-sheet,
+.battle-hero.move-projectile .hero-sprite-sheet { background-image: url('/sprites/rogue-special-attacks-transparent.png'); }
+.battle-hero.move-beam .hero-sprite-sheet { animation: rogue-heavy-beam 1.05s steps(1, end) both; }
+.battle-hero.move-smash .hero-sprite-sheet { animation: rogue-ground-smash .78s steps(1, end) both; }
+.battle-hero.move-projectile .hero-sprite-sheet { animation: rogue-projectile .72s steps(1, end) both; }
+.battle-actions { flex-wrap: wrap; }
+.battle-actions .ground-smash-button, .battle-actions .projectile-button { flex: 1 1 150px; }
+@keyframes rogue-heavy-beam { 0% { background-position: 0 40%; } 16% { background-position: 20% 40%; } 32% { background-position: 40% 40%; } 52% { background-position: 60% 40%; } 76% { background-position: 80% 40%; } 100% { background-position: 100% 40%; } }
+@keyframes rogue-ground-smash { 0% { background-position: 0 60%; } 22% { background-position: 20% 60%; } 45% { background-position: 40% 60%; } 70% { background-position: 60% 60%; } 100% { background-position: 80% 60%; } }
+@keyframes rogue-projectile { 0% { background-position: 0 80%; } 30% { background-position: 20% 80%; } 62% { background-position: 40% 80%; } 100% { background-position: 60% 80%; } }

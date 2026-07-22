@@ -40,9 +40,12 @@ import {
   type MiniMonster,
 } from "../lib/miniMonsters";
 import { createBossRemark, createPersonalEnding } from "../lib/aiNarrative";
-import { bossNames } from "../lib/bosses";
 import BedroomEnding from "./BedroomEnding";
 import { formatControlCode, loadControlBindings } from "../lib/controlBindings";
+import { GAME_ITEMS_REGISTRY } from "../config/itemsRegistry";
+import { getDynamicDialogue } from "../lib/dynamicDialogues";
+import type { PlayerEquipment } from "../types/items";
+import { getBossByLevel } from "../config/bossesRegistry";
 
 type Screen =
   | "start"
@@ -77,6 +80,11 @@ export default function MazeGame() {
   const [weaponLevel, setWeaponLevel] = useState(saved?.weaponLevel ?? 0);
   const [shieldLevel, setShieldLevel] = useState(saved?.shieldLevel ?? 0);
   const [armorLevel, setArmorLevel] = useState(saved?.armorLevel ?? 0);
+  const currentEquipment = useMemo<PlayerEquipment>(() => ({
+    weapon: GAME_ITEMS_REGISTRY.weapons[Math.max(1, Math.min(7, weaponLevel + 1))],
+    armor: GAME_ITEMS_REGISTRY.armors[Math.max(1, Math.min(5, armorLevel + 1))],
+    shield: GAME_ITEMS_REGISTRY.shields[Math.max(1, Math.min(5, shieldLevel + 1))],
+  }), [weaponLevel, armorLevel, shieldLevel]);
   const [lootFound, setLootFound] = useState(saved?.lootFound ?? false);
   const [potionFound, setPotionFound] = useState(saved?.potionFound ?? false);
   const [potions, setPotions] = useState(saved?.potions ?? 0);
@@ -132,13 +140,15 @@ export default function MazeGame() {
     stats,
   );
   const bossNumber = clues + 1;
+  const currentBoss = getBossByLevel(bossNumber);
+  const equipmentDialogue = getDynamicDialogue(currentBoss, currentEquipment.weapon.id);
   const visibleClues = Math.min(TOTAL_LEVELS, clues + (["clue", "battle", "lost"].includes(screen) ? 1 : 0));
   const playerDisplayName = accountNickname || "Герой";
   const controlBindings = loadControlBindings();
   const equipmentNames = {
-    weapon: weapons[weaponLevel].name,
-    shield: shields[shieldLevel].name,
-    armor: armors[armorLevel].name,
+    weapon: currentEquipment.weapon.name,
+    shield: currentEquipment.shield.name,
+    armor: currentEquipment.armor.name,
   };
   const monsterInRange = monsters.some((enemy) => Math.abs(enemy.x - player.x) + Math.abs(enemy.y - player.y) === 1);
   const addStat = useCallback((key: keyof GameStats) => {
@@ -153,7 +163,7 @@ export default function MazeGame() {
   useEffect(() => {
     if ((screen !== "clue" && screen !== "battle") || aiBossRemark !== undefined) return;
     let active = true;
-    void createBossRemark(bossNumber, bossNames[bossNumber - 1], stats, equipmentNames)
+    void createBossRemark(bossNumber, currentBoss.name, stats, equipmentNames)
       .then((remark) => { if (active) setAiBossRemark(remark ?? ""); });
     return () => { active = false; };
   }, [aiBossRemark, bossNumber, screen]);
@@ -162,7 +172,7 @@ export default function MazeGame() {
     let active = true;
     void createPersonalEnding(stats, equipmentNames)
       .then((ending) => {
-        if (active) setPersonalEnding(ending ?? "Сбой уничтожен, стражи свободны, а герой возвращается домой, сохранив память обо всех обитателях Лабиринта.");
+        if (active) setPersonalEnding(ending ?? "Корона разрушена, стражи свободны, а герой возвращается домой, сохранив память обо всех обитателях Лабиринта.");
       });
     return () => { active = false; };
   }, [personalEnding, screen]);
@@ -307,7 +317,8 @@ export default function MazeGame() {
       if (!currentAttackers.length || currentSnapshot !== attackerSnapshot) return;
       sounds.hit();
       setMazeHp((health) => {
-        const healthAfterHit = Math.max(0, health - currentAttackers.length * MINI_MONSTER_DAMAGE);
+        const damagePerMonster = Math.max(1, MINI_MONSTER_DAMAGE - currentEquipment.armor.value);
+        const healthAfterHit = Math.max(0, health - currentAttackers.length * damagePerMonster);
         if (healthAfterHit > 0) return healthAfterHit;
         playerRef.current = checkpoint;
         setPlayer(checkpoint);
@@ -318,7 +329,7 @@ export default function MazeGame() {
       });
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [checkpoint, clues, maze, mazeHp, mazeMaxHp, monsters, player, screen]);
+  }, [checkpoint, clues, currentEquipment.armor.value, maze, mazeHp, mazeMaxHp, monsters, player, screen]);
 
   useEffect(() => {
     if (!saved?.active) return;
@@ -427,13 +438,13 @@ export default function MazeGame() {
     setHitMonsterId(target.id);
     window.setTimeout(() => setHitMonsterId(null), 420);
     addStat("attacks");
-    const damage = attackDamage + weaponLevel * 0.5;
+    const damage = currentEquipment.weapon.value;
     setMonsters((enemies) => {
       const damaged = enemies.flatMap((enemy) => enemy.id !== target.id ? [enemy] : enemy.hp <= damage ? [] : [{ ...enemy, hp: Math.round((enemy.hp - damage) * 10) / 10 }]);
       monstersRef.current = damaged;
       return damaged;
     });
-  }, [addStat, attackDamage, monsters, player, screen, weaponLevel]);
+  }, [addStat, currentEquipment.weapon.value, screen]);
 
   useMazeControls({ screen, move, attack: attackMonster, setScreen, setCameraMode });
 
@@ -651,7 +662,7 @@ export default function MazeGame() {
       )}
       {screen === "portal" && (
         <>
-          <div className="checkpoint">Сбой уничтожен · Найди портал и вернись домой</div>
+          <div className="checkpoint">Корона разрушена · Найди портал и вернись домой</div>
           <MazeBoard
             level={TOTAL_LEVELS + 1}
             maze={maze}
@@ -680,14 +691,16 @@ export default function MazeGame() {
         <><BossBattle
           key={bossNumber}
           number={bossNumber}
-          attackDamage={attackDamage}
+          boss={currentBoss}
           heroStartHp={mazeHp}
           heroMaxHp={100 + clues * 2.5}
           weaponLevel={weaponLevel}
           shieldLevel={shieldLevel}
           armorLevel={armorLevel}
+          equipment={currentEquipment}
           skin={selectedSkin}
           aiRemark={aiBossRemark}
+          equipmentDialogue={equipmentDialogue}
           onAction={recordAction}
           onHeroHealthChange={setMazeHp}
           onWin={winBattle}

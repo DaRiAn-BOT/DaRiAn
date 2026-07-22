@@ -1,13 +1,14 @@
 .animated-boss-sprite {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 96px;
+  height: 96px;
   background-image: var(--boss-sheet);
   background-position: 0 var(--boss-row);
-  background-size: 192px 128px;
+  background-size: 576px 384px;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
-  transform: scale(5.2);
+  image-rendering: auto;
+  background-color: transparent;
+  transform: scale(1.72);
   transform-origin: center bottom;
   animation: boss-sheet-cycle .85s steps(var(--boss-steps)) infinite;
 }
@@ -15,4 +16,4 @@
 .animated-boss-sprite.shield { animation-duration: .75s; }
 .animated-boss-sprite.death { animation-duration: 1.25s; animation-iteration-count: 1; animation-fill-mode: forwards; }
 @keyframes boss-sheet-cycle { to { background-position: var(--boss-end-x) var(--boss-row); } }
-@media (max-width: 700px) { .animated-boss-sprite { transform: scale(4.2); } }
+@media (max-width: 700px) { .animated-boss-sprite { transform: scale(1.4); } }

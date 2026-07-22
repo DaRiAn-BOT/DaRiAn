@@ -17,7 +17,7 @@ const animatedBossSheets = [
 
 export function getAnimatedBossSheet(level: number) {
   const fileName = animatedBossSheets[level - 1]
-  return fileName ? `/sprites/${fileName}-sprite-sheet-32.png` : null
+  return fileName ? `/sprites/${fileName}-sprite-sheet-96.png` : null
 }
 
 export function getBossImage(level: number) {
