@@ -628,6 +628,56 @@ h1, h2 { margin: 0; } h1 { font-size: clamp(27px, 6vw, 40px); letter-spacing: -.
     margin-top: 1px;
     font-size: 7px;
   }
+
+  .phone-controls .battle-card.boss-dialogue {
+    display: grid;
+    grid-template-columns: minmax(220px, 45%) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    column-gap: 14px;
+    align-items: center;
+    padding: 10px 14px;
+    text-align: left;
+  }
+
+  .phone-controls .battle-card.boss-dialogue .arena-fighters {
+    grid-column: 1;
+    grid-row: 1 / 5;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+  }
+
+  .phone-controls .battle-card.boss-dialogue > .eyebrow {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .phone-controls .battle-card.boss-dialogue > h2 {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 3px 0 6px;
+    font-size: 18px;
+  }
+
+  .phone-controls .battle-card.boss-dialogue > .dialogue-text {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: stretch;
+    min-width: 0;
+    margin: 0 0 8px;
+    padding: 12px;
+    overflow: auto;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .phone-controls .battle-card.boss-dialogue > button {
+    grid-column: 2;
+    grid-row: 4;
+    width: 100%;
+    min-height: 52px;
+    padding: 8px 12px;
+  }
 }
 @keyframes rogue-heavy-beam { 0% { background-position: 0 40%; } 16% { background-position: 20% 40%; } 32% { background-position: 40% 40%; } 52% { background-position: 60% 40%; } 76% { background-position: 80% 40%; } 100% { background-position: 100% 40%; } }
 @keyframes rogue-ground-smash { 0% { background-position: 0 60%; } 22% { background-position: 20% 60%; } 45% { background-position: 40% 60%; } 70% { background-position: 60% 60%; } 100% { background-position: 80% 60%; } }
