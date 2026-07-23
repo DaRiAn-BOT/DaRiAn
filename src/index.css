@@ -511,6 +511,124 @@ h1, h2 { margin: 0; } h1 { font-size: clamp(27px, 6vw, 40px); letter-spacing: -.
 .battle-hero.move-projectile .hero-sprite-sheet { animation: rogue-projectile .72s steps(1, end) both; }
 .battle-actions { flex-wrap: wrap; }
 .battle-actions .ground-smash-button, .battle-actions .projectile-button { flex: 1 1 150px; }
+
+/* iPhone/portrait: the shell is rotated into landscape, so the battle needs its
+   own compact layout instead of the desktop flow. */
+@media (orientation: portrait) and (max-width: 700px) {
+  body .game-shell.phone-controls {
+    overflow: hidden;
+  }
+
+  .phone-controls .battle-card {
+    box-sizing: border-box;
+    width: calc(100vh - 214px);
+    height: calc(100vw - 8px);
+    max-height: none;
+    padding: 7px 250px 7px 12px;
+    overflow: hidden;
+  }
+
+  .phone-controls .battle-card .arena-fighters {
+    height: 112px;
+    margin: -4px 0 0;
+    padding: 0;
+  }
+
+  .phone-controls .battle-card .battle-hero.sprite-hero-shell {
+    flex-basis: 120px;
+    width: 120px;
+    height: 80px;
+    margin-bottom: 4px;
+  }
+
+  .phone-controls .battle-card .boss-portrait {
+    width: 58%;
+    height: 108px;
+  }
+
+  .phone-controls .battle-card h2 {
+    max-width: 100%;
+    margin: 1px 0 2px;
+    overflow: hidden;
+    font-size: 17px;
+    line-height: 1.08;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .phone-controls .battle-card > .eyebrow {
+    margin: 0;
+    font-size: 7px;
+  }
+
+  .phone-controls .battle-card .boss-ability,
+  .phone-controls .battle-card .battle-mechanics,
+  .phone-controls .battle-card .battle-dialogue-line,
+  .phone-controls .battle-card .equipment-line {
+    display: none;
+  }
+
+  .phone-controls .battle-card .bar {
+    margin: 4px 0;
+  }
+
+  .phone-controls .battle-card .bar > div:first-child {
+    margin-bottom: 2px;
+    font-size: 9px;
+  }
+
+  .phone-controls .battle-card .bar-track {
+    height: 7px;
+  }
+
+  .phone-controls .battle-card .battle-message {
+    min-height: 24px;
+    margin: 5px 0 0;
+    overflow: hidden;
+    font-size: 8px;
+    line-height: 1.35;
+  }
+
+  .phone-controls .battle-card .battle-actions {
+    position: absolute;
+    z-index: 80;
+    top: 50%;
+    right: 8px;
+    left: auto;
+    bottom: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 112px);
+    gap: 7px;
+    width: 231px;
+    margin: 0;
+    transform: translateY(-50%);
+  }
+
+  .phone-controls .battle-card .battle-actions button {
+    width: 112px;
+    min-width: 0;
+    min-height: 54px;
+    padding: 6px;
+    font-size: 9px;
+    line-height: 1.15;
+  }
+
+  .phone-controls .battle-card .power-warning {
+    top: auto;
+    right: 8px;
+    bottom: 5px;
+    left: auto;
+    width: 231px;
+    padding: 5px 7px;
+    font-size: 8px;
+    transform: none;
+  }
+
+  .phone-controls .battle-card .power-warning small {
+    margin-top: 1px;
+    font-size: 7px;
+  }
+}
 @keyframes rogue-heavy-beam { 0% { background-position: 0 40%; } 16% { background-position: 20% 40%; } 32% { background-position: 40% 40%; } 52% { background-position: 60% 40%; } 76% { background-position: 80% 40%; } 100% { background-position: 100% 40%; } }
 @keyframes rogue-ground-smash { 0% { background-position: 0 60%; } 22% { background-position: 20% 60%; } 45% { background-position: 40% 60%; } 70% { background-position: 60% 60%; } 100% { background-position: 80% 60%; } }
 @keyframes rogue-projectile { 0% { background-position: 0 80%; } 30% { background-position: 20% 80%; } 62% { background-position: 40% 80%; } 100% { background-position: 60% 80%; } }
